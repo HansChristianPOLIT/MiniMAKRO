@@ -89,8 +89,8 @@ class BabyMAKROModelClass(EconModelClass):
             'FOC_capital_agency',
             'FOC_K_ell',
             'G',
-            'G_M',
-            'G_Y',
+            'G_M',# import public goods
+            'G_Y', # public goods
             'I_M',
             'I_Y',
             'I',
@@ -104,11 +104,11 @@ class BabyMAKROModelClass(EconModelClass):
             'mkt_clearing',            
             'MPL',
             'P_C',
-            'P_G',
+            'P_G', #
             'P_F',
             'P_I',
             'P_M_C',
-            'P_M_G',
+            'P_M_G', #
             'P_M_I',
             'P_M_X',
             'P_X',
@@ -117,7 +117,7 @@ class BabyMAKROModelClass(EconModelClass):
             'r_ell',
             'r_K',
             'S',
-            'tau',
+            'tau',#
             'v',
             'w_ast',
             'w',
@@ -127,12 +127,12 @@ class BabyMAKROModelClass(EconModelClass):
             'Y',
         ]
 
-        # all household variables
+        # all household variables (AGE-specific)
         self.varlist_hh = [
             'B_a',
             'C_a',
-            'C_R',
-            'C_HTM',
+            'C_R', # opt! age-specific
+            'C_HTM', # htm age-specific
             'FOC_C',
             'L_a',
             'L_ubar_a',
@@ -153,10 +153,10 @@ class BabyMAKROModelClass(EconModelClass):
         par.sigma = 2.0 # CRRA coefficient
         par.sigma_m = 2.0 #CRRA coefficient from matching function
         par.mu_B = 2.5 # weight on bequest motive
-        par.r_hh = 0.04 # nominal return rate                               - Note: Meget afgørende for resultaterne (ved 0.08 er der ingen løsnings)
-        par.delta_L_a = 0.05*np.ones(par.A_R) # separation probabilities    - Note: Umiddelbart mindre sensitiv efter seneste ændre i labor agency
-        par.w_U = 0.25 # outside option in bargaining                       - Note: Hvorfor er outside-option meget lavere end w_ss? Burde de et eller andet sted ikke ligge tæt på hinanden?
-        par.Lambda = 0.00 # Share of hands-to-mouth households
+        par.r_hh = 0.04 # nominal return rate
+        par.delta_L_a = 0.05*np.ones(par.A_R) # separation probabilities
+        par.w_U = 0.25 # outside option in bargaining
+        par.Lambda = 0.00 # Share of hand-to-mouth households
 
         # b. production firm
         par.r_firm = 0.04 # internal rate of return
@@ -171,7 +171,7 @@ class BabyMAKROModelClass(EconModelClass):
         par.Psi_0 = 0.5 # adjustment costs
 
         # e. government
-        par.r_b = 0.04 # rate of return on government debt
+        par.r_b = 0.02 # rate of return on government debt
         par.lambda_B = 0.0 # rigidity in taxes
         par.delta_B = 5 # number of adjustment years
         par.epsilon_B = 0.2 #   
@@ -226,10 +226,10 @@ class BabyMAKROModelClass(EconModelClass):
     # steady state #
     ################
     
-    def find_ss(self,do_print=False):
+    def find_ss(self,m_s,do_print=False):
         """ find steady state """
 
-        steady_state.find_ss(self.par,self.ss,do_print=do_print)
+        steady_state.find_ss(self.par,self.ss,m_s,do_print=do_print)
 
     #################
     # set functions #

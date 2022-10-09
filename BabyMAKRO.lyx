@@ -1183,7 +1183,7 @@ m_{t}^{s} & =\frac{\mathcal{M}_{t}}{S_{t}}.
 The number of employed therefore is
 \begin_inset Formula 
 \[
-L_{a,t}=\underline{L}_{t}+m_{t}^{s}S_{a,t}.
+L_{a,t}=\underline{L}_{a,t}+m_{t}^{s}S_{a,t}.
 \]
 
 \end_inset
@@ -1270,7 +1270,7 @@ Outputs:
 \begin{align}
 S_{a,t} & =\begin{cases}
 1 & \text{if }a=0\\
-(1-L_{a-1})+\delta_{a}^{L}L_{a-1,t-1} & \text{if }a<A_{R}\\
+(1-L_{a-1,t-1})+\delta_{a}^{L}L_{a-1,t-1} & \text{if }a<A_{R}\\
 0 & \text{if }a\geq A_{R}
 \end{cases}\label{eq:S_a}\\
 \underline{L}_{a,t} & =\begin{cases}
@@ -1349,13 +1349,9 @@ The labor agency firms post vacancies,
 The labor agency problem is:
 \begin_inset Formula 
 \begin{align*}
-V_{0}(L_{t-1})=\max_{\left\{ L_{t}\right\} }\sum_{t=0}^{\infty} & \frac{1}{(1+r^{\text{firm})^{t}}}\left[r_{t}^{\ell}\ell_{t}-w_{t}L_{t}\right]\\
+V_{0}(L_{t-1})=\max_{\left\{ L_{t}\right\} }\sum_{t=0}^{\infty} & \frac{1}{\left(1+r^{\text{firm}}\right)^{t}}\left[r_{t}^{\ell}\ell_{t}-w_{t}L_{t}\right]\\
 \ell_{t} & =L_{t}-\kappa^{L}v_{t}\\
-L_{t} & =\left(1-\delta_{t}^{L}\right)L_{t-1}+m_{t}^{v}v_{t}.\\
-\\
-V_{0}= & \frac{1}{(1+r^{firm})^{t}}(r_{t}^{\ell}(L_{t}-k^{L}v_{t})-w_{t}L_{t})+\frac{1}{(1+r^{firm})^{t+1}}(r_{t+1}^{\ell}((1-\delta_{t+1})L_{t}+(m_{t+1}^{v}-k^{L})v_{t+1})-w_{t+1}((1-\delta_{t+1}^{L})L_{t}+m_{t+1}^{v}v_{t})\\
-\frac{\partial V_{0}}{\partial L_{t}}= & \frac{1}{(1+r^{firm})^{t}}(r_{t}^{\ell}-w_{t})+\frac{(1-\delta_{t+1}^{L})}{(1+r^{firm})^{t+1}}(r_{t+1}^{\ell}-w_{t+1})=0\\
-\Leftrightarrow & w_{t}-\frac{(1-\delta_{t+1}^{L})}{(1+r^{firm})}(r_{t+1}^{\ell}-w_{t+1})=r_{t}^{\ell}\\
+L_{t} & =\left(1-\delta_{t}^{L}\right)L_{t-1}+m_{t}^{v}v_{t}.
 \end{align*}
 
 \end_inset
@@ -1364,6 +1360,36 @@ V_{0}= & \frac{1}{(1+r^{firm})^{t}}(r_{t}^{\ell}(L_{t}-k^{L}v_{t})-w_{t}L_{t})+\
 \end_layout
 
 \begin_layout Standard
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+V_{0}(L_{t-1}) & =\max_{\left\{ L_{t}\right\} }\sum_{t=0}^{\infty}\frac{1}{\left(1+r^{\text{firm}}\right)^{t}}\left[r_{t}^{\ell}\ell(L_{t},L_{t-1})-w_{t}L_{t}\right]\\
+ & \text{s.t.}\\
+\ell(L_{t},L_{t-1}) & =L_{t}-\frac{\kappa^{L}}{m_{t}^{v}}\left[L_{t}-\left(1-\delta_{t}^{L}\right)L_{t-1}\right]
+\end{align*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\frac{\partial V_{0}}{\partial L_{t}} & =0\\
+\left(1+r^{\text{firm}}\right)^{-t}\left[r_{t}^{\ell}\frac{\partial\ell_{t}}{\partial L_{t}}-w_{t}\right]+\left(1+r^{\text{firm}}\right)^{-(t+1)}r_{t+1}^{\ell}\frac{\partial\ell_{t+1}}{\partial L_{t}} & =0\\
+\left[r_{t}^{\ell}\frac{\partial\ell_{t}}{\partial L_{t}}-w_{t}\right]+\left(1+r^{\text{firm}}\right)^{-1}r_{t+1}^{\ell}\frac{\partial\ell_{t+1}}{\partial L_{t}} & =0\\
+r_{t}^{\ell} & =\frac{w_{t}-(1+r^{\text{firm}})^{-1}r_{t+1}^{\ell}\frac{\partial\ell_{t+1}}{\partial L_{t}}}{\frac{\partial\ell_{t}}{\partial L_{t}}}\\
+r_{t}^{\ell} & =\frac{1}{1-\frac{\kappa^{L}}{m_{t}^{v}}}\left[w_{t}-r_{t+1}^{\ell}\frac{1-\delta_{t+1}^{L}}{1+r^{\text{firm}}}\frac{\kappa^{L}}{m_{t+1}^{v}}\right]
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
 Using the FOC to 
 \begin_inset Formula $L_{t}$
 \end_inset
@@ -1419,9 +1445,28 @@ Outputs:
 
 \begin_inset Formula 
 \begin{align}
-r_{t}^{\ell} & =\frac{1}{1-\frac{\kappa^{L}}{m_{t}^{v}}}\left[w_{t}-\frac{1-\delta_{t}^{L}}{1+r^{\text{firm}}}\frac{\kappa^{L}}{m_{t+1}^{v}}r_{t+1}^{\ell}\right]\label{eq:w_ell}\\
+r_{t}^{\ell} & =\frac{1}{1-\frac{\kappa^{L}}{m_{t}^{v}}}\left[w_{t}-r_{t+1}^{\ell}\frac{1-\delta_{t+1}^{L}}{1+r^{\text{firm}}}\frac{\kappa^{L}}{m_{t+1}^{v}}\right]\label{eq:w_ell}\\
 \ell_{t} & =L_{t}-\kappa^{L}v_{t}.\label{eq:ell}
 \end{align}
+
+\end_inset
+
+
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+r_{ss}^{\ell} & =\frac{1}{1-\frac{\kappa^{L}}{m_{ss}^{v}}}\left[w_{ss}-r_{ss}^{\ell}\frac{1-\delta_{ss}^{L}}{1+r^{\text{firm}}}\frac{\kappa^{L}}{m_{ss}^{v}}\right]\\
+\left(1-\frac{\kappa^{L}}{m_{ss}^{v}}\right)r_{ss}^{\ell} & =w_{ss}-r_{ss}^{\ell}\frac{1-\delta_{ss}^{L}}{1+r^{\text{firm}}}\frac{\kappa^{L}}{m_{ss}^{v}}\\
+\left(1-\frac{\kappa^{L}}{m_{ss}^{v}}+\frac{1-\delta_{ss}^{L}}{1+r^{\text{firm}}}\frac{\kappa^{L}}{m_{ss}^{v}}\right) & r_{ss}^{\ell}=w_{ss}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
 
 \end_inset
 
@@ -1865,9 +1910,9 @@ V_{0} & \left(K_{t-1}\right)=\max_{\left\{ K_{t}\right\} }\sum_{t=0}^{\infty}\fr
 We choose
 \begin_inset Formula 
 \begin{align*}
-\Psi(\iota_{t},K_{t-1}) & =\frac{\Psi_{0}}{2}\left(\frac{\iota_{t}}{K_{t-1}}-\delta\right)^{2}K_{t-1}\\
-\Psi_{\iota}(\iota_{t},K_{t-1}) & =\Psi_{0}\left(\frac{\iota_{t}}{K_{t-1}}-\delta\right)\\
-\Psi_{K}(\iota_{t},K_{t-1}) & =\frac{\Psi_{0}}{2}\left(\frac{\iota_{t}}{K_{t-1}}-\delta\right)^{2}-\Psi_{0}\left(\frac{\iota_{t}}{K_{t-1}}-\delta\right)\frac{\iota_{t}}{K_{t-1}}
+\Psi(\iota_{t},K_{t-1}) & =\frac{\Psi_{0}}{2}\left(\frac{\iota_{t}}{K_{t-1}}-\delta^{K}\right)^{2}K_{t-1}\\
+\Psi_{\iota}(\iota_{t},K_{t-1}) & =\Psi_{0}\left(\frac{\iota_{t}}{K_{t-1}}-\delta^{K}\right)\\
+\Psi_{K}(\iota_{t},K_{t-1}) & =\frac{\Psi_{0}}{2}\left(\frac{\iota_{t}}{K_{t-1}}-\delta^{K}\right)^{2}-\Psi_{0}\left(\frac{\iota_{t}}{K_{t-1}}-\delta^{K}\right)\frac{\iota_{t}}{K_{t-1}}
 \end{align*}
 
 \end_inset
@@ -1893,7 +1938,7 @@ Inputs:
 \end_inset
 
 , 
-\begin_inset Formula $\left\{ p_{t}^{I}\right\} $
+\begin_inset Formula $\left\{ P_{t}^{I}\right\} $
 \end_inset
 
 , 
@@ -1997,6 +2042,10 @@ Inputs:
 \end_inset
 
 , 
+\begin_inset Formula $\left\{ G_{t}\right\} $
+\end_inset
+
+, 
 \begin_inset Formula $\left\{ w_{t}\right\} $
 \end_inset
 
@@ -2024,7 +2073,7 @@ Outputs:
 \begin_inset Formula $\left\{ B_{t}\right\} $
 \end_inset
 
-t
+
 \begin_inset Formula 
 \begin{align}
 \overline{\tau}_{t} & =\tau_{ss}\left(B_{t-1}/B_{ss}\right)^{\varepsilon_{B}}\label{eq:tau_bar}\\
@@ -2067,7 +2116,7 @@ There is a share of
 \begin_inset Formula $\lambda$
 \end_inset
 
- hands-to-mouth household and a share of unconstrained 
+ hand-to-mouth household and a share of unconstrained 
 \begin_inset Formula $1-\lambda$
 \end_inset
 
@@ -2120,7 +2169,7 @@ B_{a,t}^{R} & =(1+r^{hh})B_{a-1,t-1}^{R}+(1-\tau_{t})w_{t}L_{a,t}+\frac{(1-\lamb
 \end_layout
 
 \begin_layout Standard
-The hands-too-mouth household consume all their income
+The hand-to-mouth household consume all their income
 \begin_inset Formula 
 \[
 C_{a,t}^{\text{HtM}}=(1-\tau_{t})w_{t}L_{a,t}+\frac{(1-\lambda)B_{t}^{R,q}}{A}
@@ -2225,7 +2274,7 @@ Calculate
 \begin{align}
 \pi_{t}^{hh} & =\frac{P_{t}^{C}}{P_{t-1}^{C}}-1\label{eq:pi_hh}\\
 B_{A-1,t}^{\text{R}} & =B_{t}^{R,q}\label{eq:Bq-1}\\
-C_{a,t}^{\text{HtM}} & =(1-\tau_{t})w_{t}L_{a,t}+\frac{(1-\lambda)B_{t}^{R,q}}{A}\label{eq:C_htm}
+C_{a,t}^{\text{HtM}} & =(1-\tau_{t})w_{t}L_{a,t}+\lambda\frac{B_{t}^{R,q}}{A}\label{eq:C_htm}
 \end{align}
 
 \end_inset
@@ -2239,8 +2288,8 @@ Use FOCs backwards
 \[
 C_{a,t}^{R}=\begin{cases}
 \left(\mu^{B}\left(B_{t}^{R,q}\right)^{-\sigma}\right)^{-\frac{1}{\sigma}} & \text{if }a=A-1\\
-\left(\beta\frac{1+r_{hh}}{1+\pi_{ss}^{hh}}\left(C_{a+1,ss}^{R,}\right)^{-\sigma}\right)^{-\frac{1}{\sigma}} & \text{elif }t=T-1\\
-\left(\beta\frac{1+r_{hh}}{1+\pi_{t+1}^{hh}}\left(C_{a+1,t+1}^{R,}\right)^{-\sigma}\right)^{-\frac{1}{\sigma}} & \text{else}
+\left(\beta\frac{1+r^{hh}}{1+\pi_{ss}^{hh}}\left(C_{a+1,ss}^{R,}\right)^{-\sigma}\right)^{-\frac{1}{\sigma}} & \text{elif }t=T-1\\
+\left(\beta\frac{1+r^{hh}}{1+\pi_{t+1}^{hh}}\left(C_{a+1,t+1}^{R,}\right)^{-\sigma}\right)^{-\frac{1}{\sigma}} & \text{else}
 \end{cases}
 \]
 
@@ -2253,7 +2302,7 @@ C_{a,t}^{R}=\begin{cases}
 Calculate savings forwards
 \begin_inset Formula 
 \begin{equation}
-B_{a,t}^{R}=(1+r^{hh})B_{a-1,t-1}^{R}+(1-\tau_{t})w_{t}L_{a,t}+\frac{(1-\lambda)B_{t}^{R,q}}{A}-P_{t}^{C}C_{a,t}^{R}\label{eq:BR}
+B_{a,t}^{R}=(1+r^{hh})B_{a-1,t-1}^{R}+(1-\tau_{t})w_{t}L_{a,t}+(1-\lambda)\frac{B_{t}^{R,q}}{A}-P_{t}^{C}C_{a,t}^{R}\label{eq:BR}
 \end{equation}
 
 \end_inset
@@ -2560,7 +2609,7 @@ We want the job-finding probability to be
 \end_layout
 
 \begin_layout Enumerate
-Price price normalization:
+Price normalization:
 \begin_inset Formula 
 \[
 P_{ss}^{Y}=P_{ss}^{F}=P_{ss}^{M,\bullet}=1,\,\bullet\in\{C,G,I,X\}
@@ -2601,7 +2650,7 @@ S_{a,ss} & =\begin{cases}
 L_{a,ss} & =\underline{L}_{a,ss}+m_{ss}^{s}S_{a,ss}\\
 L_{ss} & =\sum_{a}L_{a,ss}\\
 S_{ss} & =\sum_{a}S_{a,ss}\\
-\delta_{ss}^{L} & =\frac{L_{ss}-\underline{L}_{t}}{L_{ss}}\\
+\delta_{ss}^{L} & =\frac{L_{ss}-\underline{L}_{ss}}{L_{ss}}\\
 \mathbb{\mathcal{M}}_{ss} & =\delta_{ss}^{L}L_{ss}\\
 v_{ss} & =\frac{m_{ss}^{s}S_{ss}}{\left(1-\left(m_{ss}^{s}\right)^{\frac{1}{\sigma_{m}}}\right)^{\sigma_{m}}}\\
 m_{ss}^{v} & =\frac{\mathbb{\mathcal{M}}_{ss}}{v_{ss}}
@@ -2628,7 +2677,7 @@ r_{ss}^{K}=r^{\text{firm}}+\delta^{K}
 The rental price of labor is
 \begin_inset Formula 
 \[
-r_{t}^{\ell}=\left(\frac{1-\mu^{K}\left(r_{t}^{K}\right)^{1-\sigma^{Y}}}{1-\mu^{K}}\right)^{\frac{1}{1-\sigma^{Y}}}
+r_{ss}^{\ell}=\left(\frac{1-\mu^{K}\left(r_{ss}^{K}\right)^{1-\sigma^{Y}}}{1-\mu^{K}}\right)^{\frac{1}{1-\sigma^{Y}}}
 \]
 
 \end_inset
@@ -2667,7 +2716,7 @@ Find the tax rate
 \end_layout
 
 \begin_layout Enumerate
-We guess on on 
+We guess on 
 \begin_inset Formula $B_{ss}^{q}$
 \end_inset
 
@@ -2819,7 +2868,7 @@ Add gradual mortality and habit formation.
 \begin_layout Enumerate
 
 \series bold
-Add hands-too-mouth households.
+Add hand-to-mouth households.
 \end_layout
 
 \begin_layout Enumerate

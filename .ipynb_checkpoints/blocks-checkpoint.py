@@ -295,7 +295,7 @@ def government(par,ini,ss,sol):
 
         if t == 0:
             B_G_lag = 0.0 # government enters with no debt
-            tau_lag = ini.tau # tau_lag in period zero is just steady state. remember initialized value in our case is s.s.
+            tau_lag = ss.tau # tau_lag in period zero is just steady state. remember initialized value in our case is s.s.
         else:
             B_G_lag = B_G[t-1] 
             tau_lag = tau[t-1]
@@ -328,7 +328,7 @@ def households_consumption(par,ini,ss,sol):
 
     pi_hh[:] = P_C/P_C_lag-1
     pi_hh_plus = lead(pi_hh,ss.pi_hh)
-    C_HTM = (1-tau)*w*L_a+par.Lambda*Bq/par.A 
+    C_HTM[:] = (1-tau)*w*L_a+par.Lambda*Bq/par.A 
 
     # targets
     Bq_match = sol.Bq_match
