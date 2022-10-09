@@ -113,8 +113,8 @@ def find_ss(par,ss,do_print=True):
         print(f'{ss.ell = :.2f}' ',  ' f'{ss.w = :.2f}')
 
     # g. government
-    ss.B_G = 0.1
-    ss.G = 0.0
+    ss.B_G = 20.0
+    ss.G = 10.0
     ss.tau = (par.r_b*ss.B_G+ss.P_G*ss.G)/(ss.w*ss.L)
     if do_print: 
         print(Fonttype.HEADER + 'Government:' + Fonttype.END)

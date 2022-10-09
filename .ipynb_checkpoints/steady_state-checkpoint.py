@@ -11,7 +11,8 @@ def household_ss(Bq,par,ss):
     """ household behavior in steady state """
 
     ss.Bq = Bq
-    ss.C_HTM = (1-ss.tau)*ss.w*ss.L_a+par.Lambda*Bq/par.A #(1-ss.tau)*
+    ss.C_HTM = par.Lambda*((1-ss.tau)*ss.w*ss.L_a+Bq/par.A) #(1-ss.tau)*
+    #Note: Jeg har ganget (1-lambda) på arbejderne, således de kun modtager løn tilsvarende til deres andel
 
     # a. find consumption using final savings and Euler
     for i in range(par.A):
@@ -33,7 +34,8 @@ def household_ss(Bq,par,ss):
         else: 
             B_lag = ss.B_a[a-1]
         
-        ss.B_a[a] = (1+par.r_hh)/(1+ss.pi_hh)*B_lag + (1-ss.tau)*ss.w*ss.L_a[a] + (1-par.Lambda)*ss.Bq/par.A - ss.P_C*ss.C_R[a] #(1-ss.tau)*        
+        ss.B_a[a] = (1+par.r_hh)/(1+ss.pi_hh)*B_lag + (1-par.Lambda)*(1-ss.tau)*ss.w*ss.L_a[a] + (1-par.Lambda)*ss.Bq/par.A - ss.P_C*ss.C_R[a] #(1-ss.tau)*
+        #Note: Jeg har ganget (1-lambda) på arbejderne, således de kun modtager løn tilsvarende til deres andel        
 
     # c. aggreagtes
     ss.C = np.sum(ss.C_a)
@@ -41,9 +43,7 @@ def household_ss(Bq,par,ss):
 
     return ss.Bq-ss.B_a[-1]
 
-def find_ss(par,ss,m_s,do_print=True):
-
-    ss.m_s = m_s
+def find_ss(par,ss,do_print=True):
 
     # a. price noramlizations
     ss.P_Y = 1.0
@@ -59,7 +59,8 @@ def find_ss(par,ss,m_s,do_print=True):
     ss.P_I = blocks.CES_P(ss.P_M_I,ss.P_Y,par.mu_M_I,par.sigma_I)
     ss.P_X = blocks.CES_P(ss.P_M_X,ss.P_Y,par.mu_M_X,par.sigma_X)
 
-    ss.pi_hh = 0.0
+    ss.pi_hh = 0.0  #Set inflation in steady state to 0
+    ss.m_s = 0.50   #Set the job finding rate in steady state to 0.5
 
     # c. labor supply and search and matching
     for a in range(par.A):
@@ -105,15 +106,15 @@ def find_ss(par,ss,m_s,do_print=True):
 
     # f. labor agency
     ss.ell = ss.L - par.kappa_L*ss.v
-    ss.w = ss.r_ell*par.kappa_L/ss.m_v
+    ss.w = ss.r_ell*(1-par.kappa_L/ss.m_v+(1-ss.delta_L)/(1+par.r_firm)*par.kappa_L/ss.m_v)
 
     if do_print: 
         print(Fonttype.HEADER + 'Labor agency:' + Fonttype.END)
         print(f'{ss.ell = :.2f}' ',  ' f'{ss.w = :.2f}')
 
     # g. government
-    ss.B_G = 5.0 # must be float
-    ss.G = 10.0 # must be float, problem for ss.g = 0.0
+    ss.B_G = 20.0
+    ss.G = 10.0
     ss.tau = (par.r_b*ss.B_G+ss.P_G*ss.G)/(ss.w*ss.L)
     if do_print: 
         print(Fonttype.HEADER + 'Government:' + Fonttype.END)
@@ -164,7 +165,7 @@ def find_ss(par,ss,m_s,do_print=True):
     ss.I_Y = blocks.CES_demand(1-par.mu_M_I,ss.P_Y,ss.P_I,ss.I,par.sigma_I)
 
     # m. market clearing
-    ss.X_Y = ss.Y - (ss.C_Y + ss.G_Y + ss.I_Y)
+    ss.X_Y = ss.Y - (ss.C_Y + ss.G_Y + ss.I_Y) 
     ss.chi = ss.X_Y/(1-par.mu_M_X)
     ss.X = ss.X_Y/(1-par.mu_M_X)
     ss.X_M = blocks.CES_demand(par.mu_M_X,ss.P_M_X,ss.P_X,ss.X,par.sigma_X)

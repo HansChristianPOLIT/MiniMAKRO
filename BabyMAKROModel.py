@@ -55,11 +55,11 @@ class BabyMAKROModelClass(EconModelClass):
         
         # unknowns
         self.unknowns = [
-            'Bq',
-            'K',
-            'L',
-            'r_K',
-            'w',
+            'Bq',   #Inheritance flow
+            'K',   #Capital
+            'L',   #Labour supply
+            'r_K',  #Rental price of capital
+            'w',   #wage
         ]
 
         # targets
@@ -73,14 +73,14 @@ class BabyMAKROModelClass(EconModelClass):
 
         # all non-household variables
         self.varlist = [
-            'B',
-            'B_G',
+            'B',    #End-of-period saving
+            'B_G',   #government debt
             'bargaining_cond',
             'Bq_match',
             'Bq',
-            'C_M',
-            'C_Y',
-            'C',
+            'C_M',   #Imported consumption components
+            'C_Y',   #Output consumption good
+            'C',   #Aggregate consumption
             'chi',
             'curlyM',
             'delta_L',
