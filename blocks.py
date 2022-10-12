@@ -243,7 +243,8 @@ def foreign_economy(par,ini,ss,sol):
     X = sol.X
     
     # evaluations
-    X[:] = chi*(P_Y/P_F)**(-par.sigma_F)
+    X_lag = lag(ini.X,X)
+    X[:] = par.lambda_X*X_lag + (1-par.lambda_X)*chi*(P_Y/P_F)**(-par.sigma_F)
 
 @nb.njit
 def capital_agency(par,ini,ss,sol):
@@ -327,7 +328,7 @@ def households_consumption(par,ini,ss,sol):
 
     pi_hh[:] = P_C/P_C_lag-1
     pi_hh_plus = lead(pi_hh,ss.pi_hh)
-    C_HTM = par.Lambda*((1-tau)*w*L_a+Bq/par.A) #(1-tau)*
+    C_HTM = (1-tau)*w*L_a+(1-par.Lambda)*Bq/par.A #(1-tau)*
     #Note: Jeg har ganget lambda på arbejderne, således de kun modtager løn tilsvarende til deres andel
 
     # targets

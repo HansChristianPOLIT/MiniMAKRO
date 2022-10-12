@@ -141,26 +141,25 @@ def labor_agency(par,ini,ss,sol):
     ell = sol.ell
     
     # evaluations
-    m_v_plus = lead(m_v,ss.m_v)
+    ell[:] = L-par.kappa_L*v
 
     for k in range(par.T):
 
         t = par.T-1-k
 
-        if k==0:
+        if k == 0:
             r_ell_plus = ss.r_ell
-            w_plus =ss.w
-            delta_L_plus =ss.delta_L
-
+            delta_L_plus = ss.delta_L
+            m_v_plus = ss.m_v
         else:
             r_ell_plus = r_ell[t+1]
-            w_plus = w[t+1]
             delta_L_plus = delta_L[t+1]
+            m_v_plus = m_v[t+1]
         
-        r_ell[t] = m_v[t]/par.kappa_L*(w[t]-(1-delta_L_plus)/(1+par.r_firm)*(par.kappa_L/m_v_plus[t]*r_ell_plus-w_plus))
+        fac = 1/(1-par.kappa_L/m_v[t])
+        term = r_ell_plus*(1-delta_L_plus)/(1+par.r_firm)*par.kappa_L/m_v_plus
 
-    # r_ell[:] = w / (1-par.kappa_L/m_v+(1-delta_L)/(1+par.r_firm)*par.kappa_L/m_v_plus)
-    ell[:] = L-par.kappa_L*v
+        r_ell[t] = fac*(w[t]-term)
 
 @nb.njit
 def production_firm(par,ini,ss,sol):
@@ -193,6 +192,7 @@ def bargaining(par,ini,ss,sol):
     w = sol.w
     Y = sol.Y
     ell = sol.ell
+    P_Y = sol.P_Y
 
     # outputs
     MPL = sol.MPL
@@ -204,7 +204,7 @@ def bargaining(par,ini,ss,sol):
     # evaluations
     w_lag = lag(ini.w,w)
 
-    MPL[:] = ((1-par.mu_K)*Y/ell)**(1/par.sigma_Y)
+    MPL[:] = P_Y*((1-par.mu_K)*Y/ell)**(1/par.sigma_Y)
     w_ast[:] = par.phi*MPL + (1-par.phi)*par.w_U
 
     bargaining_cond[:] = w - (par.gamma_w*w_lag + (1-par.gamma_w)*w_ast)
@@ -214,26 +214,27 @@ def repacking_firms_prices(par,ini,ss,sol):
 
     # inputs
     P_Y = sol.P_Y
+    
     P_M_C = sol.P_M_C
-    P_M_G = sol.P_M_G # new
+    P_M_G = sol.P_M_G 
     P_M_I = sol.P_M_I
     P_M_X = sol.P_M_X
 
     # outputs
     P_C = sol.P_C
-    P_G = sol.P_G # new
+    P_G = sol.P_G
     P_I = sol.P_I
     P_X = sol.P_X
 
     P_C[:] = CES_P(P_M_C,P_Y,par.mu_M_C,par.sigma_C)
-    P_G[:] = CES_P(P_M_G,P_Y,par.mu_M_G,par.sigma_G) # new
+    P_G[:] = CES_P(P_M_G,P_Y,par.mu_M_G,par.sigma_G)
     P_I[:] = CES_P(P_M_I,P_Y,par.mu_M_I,par.sigma_I)
     P_X[:] = CES_P(P_M_X,P_Y,par.mu_M_X,par.sigma_X)
 
 @nb.njit
 def foreign_economy(par,ini,ss,sol):
 
-    # inputs unpacked
+    # inputs
     P_F = sol.P_F
     chi = sol.chi
     P_Y = sol.P_Y
@@ -242,7 +243,7 @@ def foreign_economy(par,ini,ss,sol):
     X = sol.X
     
     # evaluations
-    X_lag = lag(ini.X,X) # X_t-1
+    X_lag = lag(ini.X,X)
     X[:] = par.lambda_X*X_lag + (1-par.lambda_X)*chi*(P_Y/P_F)**(-par.sigma_F)
 
 @nb.njit
@@ -275,9 +276,8 @@ def capital_agency(par,ini,ss,sol):
     term_c = -P_I_plus*adj_cost_K(iota_plus,K,par.Psi_0,par.delta_K)
     
     FOC_capital_agency[:] = term_a + 1/(1+par.r_firm)*(r_K_plus + term_b + term_c)
-
-
-@nb.njit
+    
+@nb.njit    
 def government(par,ini,ss,sol):
 
     # inputs
@@ -295,7 +295,7 @@ def government(par,ini,ss,sol):
 
         if t == 0:
             B_G_lag = 0.0 # government enters with no debt
-            tau_lag = ss.tau # tau_lag in period zero is just steady state. remember initialized value in our case is s.s.
+            tau_lag = ini.tau # tau_lag in period zero is just steady state. remember initialized value in our case is s.s.
         else:
             B_G_lag = B_G[t-1] 
             tau_lag = tau[t-1]
@@ -303,7 +303,7 @@ def government(par,ini,ss,sol):
         tau[t] = par.lambda_B*tau_lag + (1-par.lambda_B)*ss.tau*(B_G_lag/ss.B_G)**par.epsilon_B #problem for negative værdier af B_G_lag
         
         B_G[t] = (1+par.r_b)*B_G_lag + P_G[t]*G[t] - tau[t]*w[t]*L[t]
-    
+
 @nb.njit
 def households_consumption(par,ini,ss,sol):    
 
@@ -328,7 +328,8 @@ def households_consumption(par,ini,ss,sol):
 
     pi_hh[:] = P_C/P_C_lag-1
     pi_hh_plus = lead(pi_hh,ss.pi_hh)
-    C_HTM[:] = (1-tau)*w*L_a+par.Lambda*Bq/par.A 
+    C_HTM = (1-tau)*w*L_a+(1-par.Lambda)*Bq/par.A #(1-tau)*
+    #Note: Jeg har ganget lambda på arbejderne, således de kun modtager løn tilsvarende til deres andel
 
     # targets
     Bq_match = sol.Bq_match
@@ -347,7 +348,7 @@ def households_consumption(par,ini,ss,sol):
 
             else:
 
-                if t == par.T-1: # if last period, we must be in steady state. Remember T doesn't exist.
+                if t == par.T-1:
                     C_R_plus = ss.C_R[a+1]
                 else:
                     C_R_plus = C_R[a+1,t+1]
@@ -363,14 +364,15 @@ def households_consumption(par,ini,ss,sol):
 
         for a in range(par.A):
 
-            if a == 0: #ingen opsparing når du ikke er født
+            if a == 0:
                 B_a_lag = 0.0
-            elif t == 0: #Inden verden starter, så er det vores initialiseret værdi
+            elif t == 0:
                 B_a_lag = ini.B_a[a-1]
-            else: #Dette er den helt klassiske lag, som gælder i alle andre perioder
+            else:
                 B_a_lag = B_a[a-1,t-1]
             
-            B_a[a,t] = (1+par.r_hh)*B_a_lag + (1-tau[t])*w[t]*L_a[a,t] + (1-par.Lambda)*Bq[t]/par.A - P_C[t]*C_R[a,t] # changed from C_a to C_R
+            B_a[a,t] = (1+par.r_hh)*B_a_lag + (1-par.Lambda)*((1-tau[t])*w[t]*L_a[a,t]) + (1-par.Lambda)*Bq[t]/par.A - P_C[t]*C_R[a,t] #(1-tau[t])* 
+            #Note: Jeg har ganget (1-lambda) på arbejderne, således de kun modtager løn tilsvarende til deres andel
 
     # aggregate
     C[:] = np.sum(C_a,axis=0)
@@ -384,10 +386,11 @@ def repacking_firms_components(par,ini,ss,sol):
 
     # inputs
     P_Y = sol.P_Y
+
     P_M_C = sol.P_M_C
     P_C = sol.P_C
     C = sol.C
-    
+
     P_M_G = sol.P_M_G
     P_G = sol.P_G
     G = sol.G
@@ -445,6 +448,6 @@ def goods_market_clearing(par,ini,ss,sol):
     mkt_clearing = sol.mkt_clearing
 
     # evalautions
-    M[:] = C_M + G_M + I_M + X_M
+    M[:] = C_M + I_M + X_M + G_M
     
-    mkt_clearing[:] = Y - (C_Y + G_Y + I_Y + X_Y)
+    mkt_clearing[:] = Y - (C_Y + G_Y + I_Y + X_Y) 

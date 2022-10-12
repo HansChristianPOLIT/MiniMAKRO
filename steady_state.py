@@ -11,7 +11,7 @@ def household_ss(Bq,par,ss):
     """ household behavior in steady state """
 
     ss.Bq = Bq
-    ss.C_HTM = par.Lambda*((1-ss.tau)*ss.w*ss.L_a+Bq/par.A) #(1-ss.tau)*
+    ss.C_HTM = (1-ss.tau)*ss.w*ss.L_a+(1-par.Lambda)*Bq/par.A #(1-ss.tau)*
     #Note: Jeg har ganget (1-lambda) på arbejderne, således de kun modtager løn tilsvarende til deres andel
 
     # a. find consumption using final savings and Euler
@@ -113,8 +113,8 @@ def find_ss(par,ss,do_print=True):
         print(f'{ss.ell = :.2f}' ',  ' f'{ss.w = :.2f}')
 
     # g. government
-    ss.B_G = 20.0
-    ss.G = 10.0
+    ss.B_G = 150.0
+    ss.G = 50.0
     ss.tau = (par.r_b*ss.B_G+ss.P_G*ss.G)/(ss.w*ss.L)
     if do_print: 
         print(Fonttype.HEADER + 'Government:' + Fonttype.END)
