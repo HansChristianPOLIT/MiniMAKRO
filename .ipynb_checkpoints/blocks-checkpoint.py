@@ -130,7 +130,7 @@ def household_search(par,ini,ss,sol):
 def labor_agency(par,ini,ss,sol):
 
     # inputs
-    w = sol.w
+    W = sol.W
     m_v = sol.m_v
     delta_L = sol.delta_L
     L = sol.L
@@ -159,7 +159,7 @@ def labor_agency(par,ini,ss,sol):
         fac = 1/(1-par.kappa_L/m_v[t])
         term = r_ell_plus*(1-delta_L_plus)/(1+par.r_firm)*par.kappa_L/m_v_plus
 
-        r_ell[t] = fac*(w[t]-term)
+        r_ell[t] = fac*(W[t]-term)
 
 @nb.njit
 def production_firm(par,ini,ss,sol):
@@ -189,25 +189,25 @@ def production_firm(par,ini,ss,sol):
 def bargaining(par,ini,ss,sol):
 
     # inputs
-    w = sol.w
+    W = sol.W
     Y = sol.Y
     ell = sol.ell
     P_Y = sol.P_Y
 
     # outputs
-    MPL = sol.MPL
-    w_ast = sol.w_ast
+    W_bar = sol.W_bar
+    W_ast = sol.W_ast
 
     # targets
     bargaining_cond = sol.bargaining_cond
 
     # evaluations
-    w_lag = lag(ini.w,w)
+    W_lag = lag(ini.W,W)
 
-    MPL[:] = P_Y*((1-par.mu_K)*Y/ell)**(1/par.sigma_Y)
-    w_ast[:] = par.phi*MPL + (1-par.phi)*par.w_U
+    W_bar[:] = P_Y*((1-par.mu_K)*Y/ell)**(1/par.sigma_Y)
+    W_ast[:] = par.phi*W_bar + (1-par.phi)*par.W_U
 
-    bargaining_cond[:] = w - (par.gamma_w*w_lag + (1-par.gamma_w)*w_ast)
+    bargaining_cond[:] = W - (par.gamma_w*W_lag + (1-par.gamma_w)*W_ast)
     
 @nb.njit
 def repacking_firms_prices(par,ini,ss,sol):
@@ -233,18 +233,24 @@ def repacking_firms_prices(par,ini,ss,sol):
 
 @nb.njit
 def foreign_economy(par,ini,ss,sol):
-
+    
     # inputs
     P_F = sol.P_F
     chi = sol.chi
-    P_Y = sol.P_Y
+    P_X = sol.P_X
 
     # outputs
     X = sol.X
     
     # evaluations
-    X_lag = lag(ini.X,X)
-    X[:] = par.lambda_X*X_lag + (1-par.lambda_X)*chi*(P_Y/P_F)**(-par.sigma_F)
+    for t in range(par.T):
+
+        if t == 0:
+            X_lag = ini.X
+        else:
+            X_lag = X[t-1]
+
+        X[:] = par.lambda_X*X_lag + (1-par.lambda_X)*chi*(P_X/P_F)**(-par.sigma_F)
 
 @nb.njit
 def capital_agency(par,ini,ss,sol):
@@ -283,7 +289,7 @@ def government(par,ini,ss,sol):
     # inputs
     P_G = sol.P_G
     G = sol.G
-    w = sol.w
+    W = sol.W
     L = sol.L
 
     # outputs
@@ -302,7 +308,7 @@ def government(par,ini,ss,sol):
         
         tau[t] = par.lambda_B*tau_lag + (1-par.lambda_B)*ss.tau*(B_G_lag/ss.B_G)**par.epsilon_B #problem for negative værdier af B_G_lag
         
-        B_G[t] = (1+par.r_b)*B_G_lag + P_G[t]*G[t] - tau[t]*w[t]*L[t]
+        B_G[t] = (1+par.r_b)*B_G_lag + P_G[t]*G[t] - tau[t]*W[t]*L[t]
 
 @nb.njit
 def households_consumption(par,ini,ss,sol):    
@@ -310,26 +316,27 @@ def households_consumption(par,ini,ss,sol):
     # inputs
     L_a = sol.L_a
     P_C = sol.P_C
-    w = sol.w
+    P_Y = sol.P_Y
+    W = sol.W
     Bq = sol.Bq
     tau = sol.tau
 
     # outputs
     pi_hh = sol.pi_hh
-    C_HTM = sol.C_HTM
+    C_HtM = sol.C_HtM
     C_R = sol.C_R
     C_a = sol.C_a
     B_a = sol.B_a
     C = sol.C
     B = sol.B
-
+    real_W = sol.real_W
+    
     # evaluations
     P_C_lag = lag(ini.P_C,P_C)
-
     pi_hh[:] = P_C/P_C_lag-1
     pi_hh_plus = lead(pi_hh,ss.pi_hh)
-    C_HTM = (1-tau)*w*L_a+(1-par.Lambda)*Bq/par.A #(1-tau)*
-    #Note: Jeg har ganget lambda på arbejderne, således de kun modtager løn tilsvarende til deres andel
+    C_HtM[:] = ((1-tau)*W*L_a+(1-par.Lambda)*Bq/par.A)/P_C
+    real_W[:] = W/P_C
 
     # targets
     Bq_match = sol.Bq_match
@@ -357,7 +364,7 @@ def households_consumption(par,ini,ss,sol):
 
             # invert
             C_R[a,t] = RHS**(-1/par.sigma)
-            C_a[a,t] = par.Lambda*C_HTM[a,t]+(1-par.Lambda)*C_R[a,t]
+            C_a[a,t] = par.Lambda*C_HtM[a,t]+(1-par.Lambda)*C_R[a,t]
 
     # find savings forward (and aggregates)
     for t in range(par.T):
@@ -371,7 +378,7 @@ def households_consumption(par,ini,ss,sol):
             else:
                 B_a_lag = B_a[a-1,t-1]
             
-            B_a[a,t] = (1+par.r_hh)*B_a_lag + (1-par.Lambda)*((1-tau[t])*w[t]*L_a[a,t]) + (1-par.Lambda)*Bq[t]/par.A - P_C[t]*C_R[a,t] #(1-tau[t])* 
+            B_a[a,t] = (1+par.r_hh)*B_a_lag + (1-par.Lambda)*((1-tau[t])*W[t]*L_a[a,t]) + (1-par.Lambda)*Bq[t]/par.A - P_C[t]*C_R[a,t] #(1-tau[t])* 
             #Note: Jeg har ganget (1-lambda) på arbejderne, således de kun modtager løn tilsvarende til deres andel
 
     # aggregate

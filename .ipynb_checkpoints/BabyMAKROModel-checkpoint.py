@@ -5,6 +5,11 @@ import numpy as np
 from EconModel import EconModelClass, jit
 from consav import elapsed
 
+import matplotlib.pyplot as plt   
+plt.style.use('seaborn-whitegrid')
+prop_cycle = plt.rcParams['axes.prop_cycle']
+colors = prop_cycle.by_key()['color']
+
 # local
 import blocks
 import steady_state
@@ -59,7 +64,7 @@ class BabyMAKROModelClass(EconModelClass):
             'K',   #Capital
             'L',   #Labour supply
             'r_K',  #Rental price of capital
-            'w',   #wage
+            'W',   #wage
         ]
 
         # targets
@@ -102,7 +107,6 @@ class BabyMAKROModelClass(EconModelClass):
             'm_v',
             'M',
             'mkt_clearing',            
-            'MPL',
             'P_C',
             'P_G',
             'P_F',
@@ -115,12 +119,14 @@ class BabyMAKROModelClass(EconModelClass):
             'P_Y',
             'pi_hh',
             'r_ell',
+            'real_W',
             'r_K',
             'S',
             'tau',
             'v',
-            'w_ast',
-            'w',
+            'W_ast',
+            'W',
+            'W_bar',
             'X_M',
             'X_Y',
             'X',
@@ -132,7 +138,7 @@ class BabyMAKROModelClass(EconModelClass):
             'B_a',
             'C_a',
             'C_R',
-            'C_HTM',
+            'C_HtM',
             'FOC_C',
             'L_a',
             'L_ubar_a',
@@ -155,8 +161,8 @@ class BabyMAKROModelClass(EconModelClass):
         par.mu_B = 2.5 # weight on bequest motive
         par.r_hh = 0.04 # nominal return rate                               - Note: Meget afgørende for resultaterne (ved 0.08 er der ingen løsnings)
         par.delta_L_a = 0.05*np.ones(par.A_R) # separation probabilities    - Note: Umiddelbart mindre sensitiv efter seneste ændre i labor agency
-        par.w_U = 0.25 # outside option in bargaining                       - Note: Hvorfor er outside-option meget lavere end w_ss? Burde de et eller andet sted ikke ligge tæt på hinanden?
-        par.Lambda = 0.00 # Share of hands-to-mouth households
+        par.W_U = 0.8 # outside option in bargaining                       - Note: Hvorfor er outside-option meget lavere end w_ss? Burde de et eller andet sted ikke ligge tæt på hinanden?
+        par.Lambda = 0.15 # Share of hands-to-mouth households
 
         # b. production firm
         par.r_firm = 0.04 # internal rate of return
@@ -172,7 +178,7 @@ class BabyMAKROModelClass(EconModelClass):
 
         # e. government
         par.r_b = 0.04 # rate of return on government debt
-        par.lambda_B = 0.0 # rigidity in taxes
+        par.lambda_B = 0.2 # rigidity in taxes
         par.delta_B = 5 # number of adjustment years
         par.epsilon_B = 0.2 #   
 
@@ -387,3 +393,40 @@ class BabyMAKROModelClass(EconModelClass):
 
         # c. solver
         broyden_solver(obj,x0,self.jac,tol=1e-10,maxiter=100,do_print=True,model=self)
+
+    ###########
+    # figures #
+    ###########
+    def plot_IRF(self,varlist=[],ncol=3,T_IRF=50,abs=[],Y_share=[]):
+        """ plot IRFs """
+
+        ss = self.ss
+        sol = self.sol
+
+        nrow = len(varlist)//ncol
+        if len(varlist) > nrow*ncol: nrow+=1
+
+        fig = plt.figure(figsize=(ncol*6,nrow*6/1.5))
+        for i,varname in enumerate(varlist):
+
+            ax = fig.add_subplot(nrow,ncol,1+i)
+
+            path = sol.__dict__[varname]
+            ssvalue = ss.__dict__[varname]
+
+            if varname in abs:
+                ax.axhline(ssvalue,color='black')
+                ax.plot(path[:T_IRF],'-o',markersize=3)
+            elif varname in Y_share:
+                ax.plot(path[:T_IRF]/sol.Y[:T_IRF],'-o',markersize=3)   
+                ax.set_ylabel('share of Y')         
+            elif np.isclose(ssvalue,0.0):
+                ax.plot(path[:T_IRF]-ssvalue,'-o',markersize=3)
+                ax.set_ylabel('diff.to ss')
+            else:
+                ax.plot((path[:T_IRF]/ssvalue-1)*100,'-o',markersize=3)
+                ax.set_ylabel('% diff.to ss')
+
+            ax.set_title(varname)
+
+        fig.tight_layout(pad=1.0)

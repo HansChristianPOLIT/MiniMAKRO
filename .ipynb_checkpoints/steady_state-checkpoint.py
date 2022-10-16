@@ -11,7 +11,7 @@ def household_ss(Bq,par,ss):
     """ household behavior in steady state """
 
     ss.Bq = Bq
-    ss.C_HTM = (1-ss.tau)*ss.w*ss.L_a+(1-par.Lambda)*Bq/par.A #(1-ss.tau)*
+    ss.C_HtM = ((1-ss.tau)*ss.W*ss.L_a+(1-par.Lambda)*Bq/par.A)/ss.P_C #(1-ss.tau)*
     #Note: Jeg har ganget (1-lambda) på arbejderne, således de kun modtager løn tilsvarende til deres andel
 
     # a. find consumption using final savings and Euler
@@ -24,7 +24,7 @@ def household_ss(Bq,par,ss):
             RHS = par.beta*(1+par.r_hh)*ss.C_R[a+1]**(-par.sigma)
 
         ss.C_R[a] = RHS**(-1/par.sigma)
-        ss.C_a[a] = par.Lambda*ss.C_HTM[a]+(1-par.Lambda)*ss.C_R[a] 
+        ss.C_a[a] = par.Lambda*ss.C_HtM[a]+(1-par.Lambda)*ss.C_R[a] 
 
     # b. find implied savings
     for a in range(par.A):
@@ -34,7 +34,7 @@ def household_ss(Bq,par,ss):
         else: 
             B_lag = ss.B_a[a-1]
         
-        ss.B_a[a] = (1+par.r_hh)/(1+ss.pi_hh)*B_lag + (1-par.Lambda)*(1-ss.tau)*ss.w*ss.L_a[a] + (1-par.Lambda)*ss.Bq/par.A - ss.P_C*ss.C_R[a] #(1-ss.tau)*
+        ss.B_a[a] = (1+par.r_hh)/(1+ss.pi_hh)*B_lag + (1-par.Lambda)*(1-ss.tau)*ss.W*ss.L_a[a] + (1-par.Lambda)*ss.Bq/par.A - ss.P_C*ss.C_R[a] #(1-ss.tau)*
         #Note: Jeg har ganget (1-lambda) på arbejderne, således de kun modtager løn tilsvarende til deres andel        
 
     # c. aggreagtes
@@ -106,26 +106,28 @@ def find_ss(par,ss,do_print=True):
 
     # f. labor agency
     ss.ell = ss.L - par.kappa_L*ss.v
-    ss.w = ss.r_ell*(1-par.kappa_L/ss.m_v+(1-ss.delta_L)/(1+par.r_firm)*par.kappa_L/ss.m_v)
+    ss.W = ss.r_ell*(1-par.kappa_L/ss.m_v+(1-ss.delta_L)/(1+par.r_firm)*par.kappa_L/ss.m_v)
 
     if do_print: 
         print(Fonttype.HEADER + 'Labor agency:' + Fonttype.END)
-        print(f'{ss.ell = :.2f}' ',  ' f'{ss.w = :.2f}')
+        print(f'{ss.ell = :.2f}' ',  ' f'{ss.W = :.2f}')
 
     # g. government
     ss.B_G = 150.0
     ss.G = 50.0
-    ss.tau = (par.r_b*ss.B_G+ss.P_G*ss.G)/(ss.w*ss.L)
+    ss.tau = (par.r_b*ss.B_G+ss.P_G*ss.G)/(ss.W*ss.L)
     if do_print: 
         print(Fonttype.HEADER + 'Government:' + Fonttype.END)
         print(f'{ss.B_G = :.2f}' ',  ' f'{ss.G = :.2f}' ',  ' f'{ss.tau = :.2f}')
 
     # h. household behavior
+    ss.real_W = ss.W/ss.P_C
+    
     if do_print: 
         print(Fonttype.HEADER + 'Households:' + Fonttype.END)
         print(f'solving for household behavior:',end='')
 
-    result = optimize.root_scalar(household_ss,bracket=[0.01,100],method='brentq',args=(par,ss,))
+    result = optimize.root_scalar(household_ss,bracket=[0.001,1000],method='brentq',args=(par,ss,))
     if do_print: print(f' {result.converged = }')
     
     household_ss(result.root,par,ss)
@@ -179,9 +181,9 @@ def find_ss(par,ss,do_print=True):
         print(f'{ss.X = :.2f}')
 
     # n. bargaining
-    ss.w_ast = ss.w
-    ss.MPL = ((1-par.mu_K)*ss.Y/ss.ell)**(1/par.sigma_Y)
-    par.phi = (ss.w-par.w_U)/(ss.MPL-par.w_U)
+    ss.W_ast = ss.W
+    ss.W_bar = ss.P_Y*((1-par.mu_K)*ss.Y/ss.ell)**(1/par.sigma_Y)
+    par.phi = (ss.W-par.W_U)/(ss.W_bar-par.W_U)
     if do_print: 
         print(Fonttype.HEADER + 'Bargaining:' + Fonttype.END)
         print(f'{par.phi = :.3f}')
