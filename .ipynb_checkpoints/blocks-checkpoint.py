@@ -316,7 +316,6 @@ def households_consumption(par,ini,ss,sol):
     # inputs
     L_a = sol.L_a
     P_C = sol.P_C
-    P_Y = sol.P_Y
     W = sol.W
     Bq = sol.Bq
     tau = sol.tau
@@ -324,23 +323,43 @@ def households_consumption(par,ini,ss,sol):
     # outputs
     pi_hh = sol.pi_hh
     C_HtM = sol.C_HtM
+    C_HtM_a = sol.C_HtM_a
     C_R = sol.C_R
+    C_R_a = sol.C_R_a
     C_a = sol.C_a
-    B_a = sol.B_a
     C = sol.C
+    B_a = sol.B_a
+    B_HtM_a = sol.B_HtM_a
+    B_R_a = sol.B_R_a
     B = sol.B
     real_W = sol.real_W
+    inc = sol.inc
+    inc_a = sol.inc_a
+    real_r_hh = sol.real_r_hh
     
     # evaluations
     P_C_lag = lag(ini.P_C,P_C)
     pi_hh[:] = P_C/P_C_lag-1
     pi_hh_plus = lead(pi_hh,ss.pi_hh)
-    C_HtM[:] = ((1-tau)*W*L_a+(1-par.Lambda)*Bq/par.A)/P_C
+    
     real_W[:] = W/P_C
+    real_r_hh[:] = (1+par.r_hh)/(1+pi_hh_plus)-1
+
 
     # targets
     Bq_match = sol.Bq_match
+    
+    # a. income 
+    for t in range(par.T):
+        inc_a[:,t] = (1-tau[t])*W[t]*L_a[:,t]+(1-par.Lambda)*Bq[t]/par.A # life cycle income in period t
+        inc[t] = np.sum(inc_a[:,t]) # aggregated income in period t
+    
+    # b. HtM 
+    for t in range(par.T):
+        C_HtM_a[:,t] = inc_a[:,t]/P_C[t] #Life cycle consumption for HtM
+        B_HtM_a[:,t] = 0.0 # no savings for HtM over life cycle
 
+    # c. Ricardians 
     # find consumption backwards
     for i in range(par.A): 
         
@@ -356,15 +375,14 @@ def households_consumption(par,ini,ss,sol):
             else:
 
                 if t == par.T-1:
-                    C_R_plus = ss.C_R[a+1]
+                    C_R_a_plus = ss.C_R_a[a+1]
                 else:
-                    C_R_plus = C_R[a+1,t+1]
+                    C_R_a_plus = C_R_a[a+1,t+1]
 
-                RHS = par.beta*(1+par.r_hh)/(1+pi_hh_plus[t])*C_R_plus**(-par.sigma)    
+                RHS = par.beta*(1+par.r_hh)/(1+pi_hh_plus[t])*C_R_a_plus**(-par.sigma)    
 
             # invert
-            C_R[a,t] = RHS**(-1/par.sigma)
-            C_a[a,t] = par.Lambda*C_HtM[a,t]+(1-par.Lambda)*C_R[a,t]
+            C_R_a[a,t] = RHS**(-1/par.sigma)
 
     # find savings forward (and aggregates)
     for t in range(par.T):
@@ -372,20 +390,29 @@ def households_consumption(par,ini,ss,sol):
         for a in range(par.A):
 
             if a == 0:
-                B_a_lag = 0.0
+                B_R_a_lag = 0.0
             elif t == 0:
-                B_a_lag = ini.B_a[a-1]
+                B_R_a_lag = ini.B_R_a[a-1]
             else:
-                B_a_lag = B_a[a-1,t-1]
+                B_R_a_lag = B_R_a[a-1,t-1]
             
-            B_a[a,t] = (1+par.r_hh)*B_a_lag + (1-par.Lambda)*((1-tau[t])*W[t]*L_a[a,t]) + (1-par.Lambda)*Bq[t]/par.A - P_C[t]*C_R[a,t] #(1-tau[t])* 
+            B_R_a[a,t] = (1+par.r_hh)*B_R_a_lag + (1-par.Lambda)*inc_a[a,t] - P_C[t]*C_R_a[a,t] #(1-tau[t])* 
             #Note: Jeg har ganget (1-lambda) på arbejderne, således de kun modtager løn tilsvarende til deres andel
 
-    # aggregate
-    C[:] = np.sum(C_a,axis=0)
-    B[:] = np.sum(B_a,axis=0)  
+    # d. Aggregate
+    for t in range(par.T):
+        
+        # life cycle 
+        C_a[:,t] = par.Lambda*C_HtM_a[:,t]+(1-par.Lambda)*C_R_a[:,t]
+        B_a[:,t] = par.Lambda*B_HtM_a[:,t]+(1-par.Lambda)*B_R_a[:,t]
+        
+        # time period
+        C[t] = np.sum(C_a[:,t])
+        C_HtM[t] = np.sum(C_HtM_a[:,t])
+        C_R[t] = np.sum(C_R_a[:,t])
+        B[t] = np.sum(B_a[:,t])  
 
-    # matching Bq
+    # e. matching Bq
     Bq_match[:] = Bq - B_a[-1,:]
 
 @nb.njit

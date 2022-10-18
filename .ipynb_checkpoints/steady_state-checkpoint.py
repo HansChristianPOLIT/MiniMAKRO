@@ -11,9 +11,13 @@ def household_ss(Bq,par,ss):
     """ household behavior in steady state """
 
     ss.Bq = Bq
-    ss.C_HtM = ((1-ss.tau)*ss.W*ss.L_a+(1-par.Lambda)*Bq/par.A)/ss.P_C #(1-ss.tau)*
-    #Note: Jeg har ganget (1-lambda) på arbejderne, således de kun modtager løn tilsvarende til deres andel
-
+    # a. income 
+    ss.inc_a[:] = (1-ss.tau)*ss.W*ss.L_a+(1-par.Lambda)*Bq/par.A
+    
+    # b. HtM 
+    ss.C_HtM_a[:] = ss.inc_a/ss.P_C
+    ss.B_HtM_a[:] = np.zeros(par.A)
+    
     # a. find consumption using final savings and Euler
     for i in range(par.A):
 
@@ -21,24 +25,29 @@ def household_ss(Bq,par,ss):
         if i == 0:
             RHS = par.mu_B*Bq**(-par.sigma)
         else:
-            RHS = par.beta*(1+par.r_hh)*ss.C_R[a+1]**(-par.sigma)
+            RHS = par.beta*(1+par.r_hh)*ss.C_R_a[a+1]**(-par.sigma)
 
-        ss.C_R[a] = RHS**(-1/par.sigma)
-        ss.C_a[a] = par.Lambda*ss.C_HtM[a]+(1-par.Lambda)*ss.C_R[a] 
+        ss.C_R_a[a] = RHS**(-1/par.sigma)
 
     # b. find implied savings
     for a in range(par.A):
 
         if a == 0:
-            B_lag = 0.0
+            B_R_a_lag = 0.0
         else: 
-            B_lag = ss.B_a[a-1]
+            B_R_a_lag = ss.B_R_a[a-1]
         
-        ss.B_a[a] = (1+par.r_hh)/(1+ss.pi_hh)*B_lag + (1-par.Lambda)*(1-ss.tau)*ss.W*ss.L_a[a] + (1-par.Lambda)*ss.Bq/par.A - ss.P_C*ss.C_R[a] #(1-ss.tau)*
+        ss.B_R_a[a] = (1+par.r_hh)/(1+ss.pi_hh)*B_R_a_lag + (1-par.Lambda)*(1-ss.tau)*ss.W*ss.L_a[a] + (1-par.Lambda)*ss.Bq/par.A - ss.P_C*ss.C_R_a[a] #(1-ss.tau)*
         #Note: Jeg har ganget (1-lambda) på arbejderne, således de kun modtager løn tilsvarende til deres andel        
 
-    # c. aggreagtes
+    # c. aggregate
+    ss.C_a = par.Lambda*ss.C_HtM_a+(1-par.Lambda)*ss.C_R_a
+    ss.B_a = par.Lambda*ss.B_HtM_a+(1-par.Lambda)*ss.B_R_a
+    
+    ss.inc = np.sum(ss.inc_a)
     ss.C = np.sum(ss.C_a)
+    ss.C_HtM = np.sum(ss.C_HtM_a)
+    ss.C_R = np.sum(ss.C_R_a)
     ss.B = np.sum(ss.B_a)
 
     return ss.Bq-ss.B_a[-1]
@@ -53,16 +62,19 @@ def find_ss(par,ss,do_print=True):
     ss.P_M_I = 1.0
     ss.P_M_X = 1.0
     
-    # b. pricing in repacking firms
+    # b. fixed variables
+    ss.pi_hh = par.pi_hh_ss  
+    ss.m_s = par.m_s_ss   
+    ss.B_G = par.B_G_ss
+    ss.G = par.G_ss 
+    
+    # c. pricing in repacking firms
     ss.P_C = blocks.CES_P(ss.P_M_C,ss.P_Y,par.mu_M_C,par.sigma_C)
     ss.P_G = blocks.CES_P(ss.P_M_G,ss.P_Y,par.mu_M_G,par.sigma_G)
     ss.P_I = blocks.CES_P(ss.P_M_I,ss.P_Y,par.mu_M_I,par.sigma_I)
     ss.P_X = blocks.CES_P(ss.P_M_X,ss.P_Y,par.mu_M_X,par.sigma_X)
 
-    ss.pi_hh = 0.0  #Set inflation in steady state to 0
-    ss.m_s = 0.50   #Set the job finding rate in steady state to 0.5
-
-    # c. labor supply and search and matching
+    # d. labor supply and search and matching
     for a in range(par.A):
         
         if a == 0:
@@ -90,21 +102,21 @@ def find_ss(par,ss,do_print=True):
         print(Fonttype.HEADER + 'Labor supply and search and matching:' + Fonttype.END)
         print(f'{ss.S = :.2f}' ',  ' f'{ss.L = :.2f}' ',  ' f'{ss.delta_L = :.2f}' ',  ' f'{ss.v = :.2f}' ',  ' f'{ss.m_v = :.2f}')
 
-    # d. capital agency FOC
+    # e. capital agency FOC
     ss.r_K = (par.r_firm + par.delta_K)*ss.P_I
 
     if do_print: 
         print(Fonttype.HEADER + 'Capital agency FOC:' + Fonttype.END)
         print(f'{ss.r_K = :.2f}')
 
-    # e. production firm pricing
+    # f. production firm pricing
     ss.r_ell = ((1-par.mu_K*(ss.r_K)**(1-par.sigma_Y))/(1-par.mu_K))**(1/(1-par.sigma_Y))
 
     if do_print: 
         print(Fonttype.HEADER + 'Production firm pricing:' + Fonttype.END)
         print(f'{ss.r_ell = :.2f}')
 
-    # f. labor agency
+    # g. labor agency
     ss.ell = ss.L - par.kappa_L*ss.v
     ss.W = ss.r_ell*(1-par.kappa_L/ss.m_v+(1-ss.delta_L)/(1+par.r_firm)*par.kappa_L/ss.m_v)
 
@@ -112,16 +124,15 @@ def find_ss(par,ss,do_print=True):
         print(Fonttype.HEADER + 'Labor agency:' + Fonttype.END)
         print(f'{ss.ell = :.2f}' ',  ' f'{ss.W = :.2f}')
 
-    # g. government
-    ss.B_G = 150.0
-    ss.G = 50.0
+    # h. government
     ss.tau = (par.r_b*ss.B_G+ss.P_G*ss.G)/(ss.W*ss.L)
     if do_print: 
         print(Fonttype.HEADER + 'Government:' + Fonttype.END)
         print(f'{ss.B_G = :.2f}' ',  ' f'{ss.G = :.2f}' ',  ' f'{ss.tau = :.2f}')
 
-    # h. household behavior
+    # i. household behavior
     ss.real_W = ss.W/ss.P_C
+    ss.real_r_hh = (1+par.r_firm)/(1+ss.pi_hh)-1
     
     if do_print: 
         print(Fonttype.HEADER + 'Households:' + Fonttype.END)
@@ -135,28 +146,28 @@ def find_ss(par,ss,do_print=True):
     if do_print: 
         print(f'{ss.C = :.2f}' ',  ' f'{ss.B = :.2f}')
     
-    # i. production firm FOCs
+    # j. production firm FOCs
     ss.K = par.mu_K/(1-par.mu_K)*(ss.r_ell/ss.r_K)**par.sigma_Y*ss.ell
 
     if do_print: 
         print(Fonttype.HEADER + 'Production firm FOCs:' + Fonttype.END)
         print(f'{ss.K = :.2f}')
 
-    # j. capital accumulation equation
+    # k. capital accumulation equation
     ss.iota = ss.I = par.delta_K*ss.K
 
     if do_print: 
         print(Fonttype.HEADER + 'Capital accumulation equation:' + Fonttype.END)
         print(f'{ss.I = :.2f}')
 
-    # k. output in production firm
+    # l. output in production firm
     ss.Y = blocks.CES_Y(ss.K,ss.ell,par.mu_K,par.sigma_Y)
 
     if do_print: 
         print(Fonttype.HEADER + 'Output in production firm:' + Fonttype.END)
         print(f'{ss.Y = :.2f}')
 
-    # l. CES demand in packing firms
+    # m. CES demand in packing firms
     ss.C_M = blocks.CES_demand(par.mu_M_C,ss.P_M_C,ss.P_C,ss.C,par.sigma_C)
     ss.C_Y = blocks.CES_demand(1-par.mu_M_C,ss.P_Y,ss.P_C,ss.C,par.sigma_C)
 
@@ -166,7 +177,7 @@ def find_ss(par,ss,do_print=True):
     ss.I_M = blocks.CES_demand(par.mu_M_I,ss.P_M_I,ss.P_I,ss.I,par.sigma_I)
     ss.I_Y = blocks.CES_demand(1-par.mu_M_I,ss.P_Y,ss.P_I,ss.I,par.sigma_I)
 
-    # m. market clearing
+    # n. market clearing
     ss.X_Y = ss.Y - (ss.C_Y + ss.G_Y + ss.I_Y) 
     ss.chi = ss.X_Y/(1-par.mu_M_X)
     ss.X = ss.X_Y/(1-par.mu_M_X)

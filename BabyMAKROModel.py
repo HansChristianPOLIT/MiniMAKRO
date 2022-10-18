@@ -83,9 +83,11 @@ class BabyMAKROModelClass(EconModelClass):
             'bargaining_cond',
             'Bq_match',
             'Bq',
+            'C_HtM', #aggregated HtM consumption
             'C_M',   #Imported consumption components
             'C_Y',   #Output consumption good
             'C',   #Aggregate consumption
+            'C_R', #aggregated Ricardian HH consumption
             'chi',
             'curlyM',
             'delta_L',
@@ -100,6 +102,7 @@ class BabyMAKROModelClass(EconModelClass):
             'I_Y',
             'I',
             'iota',
+            'inc',
             'K',
             'L_ubar',
             'L',
@@ -119,6 +122,7 @@ class BabyMAKROModelClass(EconModelClass):
             'P_Y',
             'pi_hh',
             'r_ell',
+            'real_r_hh',
             'real_W',
             'r_K',
             'S',
@@ -136,9 +140,12 @@ class BabyMAKROModelClass(EconModelClass):
         # all household variables
         self.varlist_hh = [
             'B_a',
+            'B_HtM_a',
+            'B_R_a',
             'C_a',
-            'C_R',
-            'C_HtM',
+            'C_HtM_a',
+            'C_R_a',
+            'inc_a',
             'FOC_C',
             'L_a',
             'L_ubar_a',
@@ -162,7 +169,7 @@ class BabyMAKROModelClass(EconModelClass):
         par.r_hh = 0.04 # nominal return rate                               - Note: Meget afgørende for resultaterne (ved 0.08 er der ingen løsnings)
         par.delta_L_a = 0.05*np.ones(par.A_R) # separation probabilities    - Note: Umiddelbart mindre sensitiv efter seneste ændre i labor agency
         par.W_U = 0.8 # outside option in bargaining                       - Note: Hvorfor er outside-option meget lavere end w_ss? Burde de et eller andet sted ikke ligge tæt på hinanden?
-        par.Lambda = 0.15 # Share of hands-to-mouth households
+        par.Lambda = 0.25 # Share of hands-to-mouth households
 
         # b. production firm
         par.r_firm = 0.04 # internal rate of return
@@ -171,10 +178,10 @@ class BabyMAKROModelClass(EconModelClass):
         par.sigma_Y = 1.01 # substitution
 
         # c. labor agency
-        par.kappa_L = 0.025
+        par.kappa_L = 0.05 # cost of vacancies in labor units
 
         # d. capital agency
-        par.Psi_0 = 0.5 # adjustment costs
+        par.Psi_0 = 5.0 # adjustment costs
 
         # e. government
         par.r_b = 0.04 # rate of return on government debt
@@ -185,7 +192,7 @@ class BabyMAKROModelClass(EconModelClass):
         # e. repacking
         par.mu_M_C = 0.30 # weight on imports in C
         par.sigma_C = 1.5 # substitution
-        par.mu_M_G = 0.30 # weight on imports in G
+        par.mu_M_G = 0.10 # weight on imports in G
         par.sigma_G = 1.5 # substitution
         par.mu_M_I = 0.35 # weight on imports in I
         par.sigma_I = 1.5 # substitution
@@ -193,16 +200,22 @@ class BabyMAKROModelClass(EconModelClass):
         par.sigma_X = 1.5 # substitution
 
         # f. foreign
-        par.sigma_F = 1.5 # substitution in export demand
-        par.lambda_X = 0.0 # rigidity in export demand
+        par.sigma_F = 4 # substitution in export demand
+        par.lambda_X = 0.5 # rigidity in export demand
 
         # g. matching
         par.sigma_m = 1.5 # curvature
 
         # h. bargaining
-        par.gamma_w = 0.75 # wage persistence
+        par.gamma_w = 0.80 # wage persistence
         par.phi = np.nan # bargaining power of firms (determined when finding steady state)
 
+        # j. Steady State
+        par.pi_hh_ss = 0.0  #Set inflation in steady state to 0
+        par.m_s_ss = 0.50   #Set the job finding rate in steady state to 0.5
+        par.B_G_ss = 150.0
+        par.G_ss = 50.0
+        
     def allocate(self):
         """ allocate model """
 
@@ -428,5 +441,43 @@ class BabyMAKROModelClass(EconModelClass):
                 ax.set_ylabel('% diff.to ss')
 
             ax.set_title(varname)
+
+        fig.tight_layout(pad=1.0)
+        
+    def plot_IRF_hh(self,varlist,t0_list=None,ncol=2):
+        """ plot IRFs for household variables """
+
+        par = self.par
+        ss = self.ss
+        sol = self.sol
+
+        if t0_list is None: t0_list = [-par.A+1,0,par.A]
+
+        nrow = len(varlist)//ncol
+        if len(varlist) > nrow*ncol: nrow+=1
+
+        fig = plt.figure(figsize=(ncol*6,nrow*6/1.5))
+
+        for i,varname in enumerate(varlist):
+
+            ax = fig.add_subplot(nrow,ncol,1+i)
+
+            for t0 in t0_list:
+
+                t_beg = np.fmax(t0,0)
+                t_end = t0 + par.A-1
+
+                y = np.zeros(t_end-t_beg)
+                for j,t in enumerate(range(t_beg,t_end)):
+                    a = t-t0
+                    y[j] = sol.__dict__[varname][a,t]-ss.__dict__[varname][a]
+                    
+                ax.plot(np.arange(t_beg-t0,t_end-t0),y,label=f'$t_0$ = {t0}')
+                ax.set_xlabel('age')
+                ax.set_ylabel('diff to ss')
+                ax.set_title(varname)
+
+            if i == 0:
+                ax.legend(frameon=True)
 
         fig.tight_layout(pad=1.0)
