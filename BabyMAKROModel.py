@@ -181,11 +181,11 @@ class BabyMAKROModelClass(EconModelClass):
         par.kappa_L = 0.05 # cost of vacancies in labor units
 
         # d. capital agency
-        par.Psi_0 = 5.0 # adjustment costs
+        par.Psi_0 = 4.0 # adjustment costs
 
         # e. government
         par.r_b = 0.04 # rate of return on government debt
-        par.lambda_B = 0.2 # rigidity in taxes
+        par.lambda_B = 0.5 # rigidity in taxes
         par.delta_B = 5 # number of adjustment years
         par.epsilon_B = 0.2 #   
 
@@ -198,9 +198,9 @@ class BabyMAKROModelClass(EconModelClass):
         par.sigma_I = 1.5 # substitution
         par.mu_M_X = 0.40 # weight on imports in X
         par.sigma_X = 1.5 # substitution
-
+        
         # f. foreign
-        par.sigma_F = 4 # substitution in export demand
+        par.sigma_F = 1.50 # substitution in export demand
         par.lambda_X = 0.5 # rigidity in export demand
 
         # g. matching

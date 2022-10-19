@@ -213,24 +213,26 @@ def bargaining(par,ini,ss,sol):
 def repacking_firms_prices(par,ini,ss,sol):
 
     # inputs
-    P_Y = sol.P_Y
-    
     P_M_C = sol.P_M_C
     P_M_G = sol.P_M_G 
     P_M_I = sol.P_M_I
     P_M_X = sol.P_M_X
+    P_Y = sol.P_Y
 
     # outputs
     P_C = sol.P_C
     P_G = sol.P_G
     P_I = sol.P_I
     P_X = sol.P_X
-
+    
+    #evaluations
+    P_Y_lag = lag(ini.P_Y,P_Y)
+    
     P_C[:] = CES_P(P_M_C,P_Y,par.mu_M_C,par.sigma_C)
     P_G[:] = CES_P(P_M_G,P_Y,par.mu_M_G,par.sigma_G)
     P_I[:] = CES_P(P_M_I,P_Y,par.mu_M_I,par.sigma_I)
     P_X[:] = CES_P(P_M_X,P_Y,par.mu_M_X,par.sigma_X)
-
+    
 @nb.njit
 def foreign_economy(par,ini,ss,sol):
     
@@ -300,8 +302,8 @@ def government(par,ini,ss,sol):
     for t in range(par.T):
 
         if t == 0:
-            B_G_lag = 0.0 # government enters with no debt
-            tau_lag = ini.tau # tau_lag in period zero is just steady state. remember initialized value in our case is s.s.
+            B_G_lag = ss.B_G # government enters with no debt
+            tau_lag = ss.tau # tau_lag in period zero is just steady state. remember initialized value in our case is s.s.
         else:
             B_G_lag = B_G[t-1] 
             tau_lag = tau[t-1]
