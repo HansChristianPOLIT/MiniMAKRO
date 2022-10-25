@@ -424,9 +424,17 @@ class BabyMAKROModelClass(EconModelClass):
     ###########
     # figures #
     ###########
+
+    def get_key(self,varname):
+        """ fetch name associated with variable """
+        variabel_name = {"Export ($X$)": "X", "GDP ($Y$)":"Y", "Consumption ($C$)":"C","Imports ($M$)":"M", "Government Spending ($G$)":"G", "Investments ($I$)":"I", "Capital ($K$)":"K"}
+        for key, value in variabel_name.items():
+            if value == varname:
+                 return key
+    
     def plot_IRF(self,varlist=[],ncol=3,T_IRF=50,abs=[],Y_share=[]):
         """ plot IRFs """
-
+        
         ss = self.ss
         sol = self.sol
 
@@ -445,16 +453,19 @@ class BabyMAKROModelClass(EconModelClass):
                 ax.axhline(ssvalue,color='black')
                 ax.plot(path[:T_IRF],'-o',markersize=3)
             elif varname in Y_share:
-                ax.plot(path[:T_IRF]/sol.Y[:T_IRF],'-o',markersize=3)   
-                ax.set_ylabel('share of Y')         
+                ax.plot(path[:T_IRF]/sol.Y[:T_IRF],'-o',markersize=3)
+                ax.set_ylabel('share of Y', size = 14)         
             elif np.isclose(ssvalue,0.0):
                 ax.plot(path[:T_IRF]-ssvalue,'-o',markersize=3)
-                ax.set_ylabel('diff.to ss')
+                ax.axhline(y=0, color ='dimgrey')
+                ax.set_ylabel('diff.to ss', size = 14)
             else:
                 ax.plot((path[:T_IRF]/ssvalue-1)*100,'-o',markersize=3)
-                ax.set_ylabel('% diff.to ss')
-
-            ax.set_title(varname)
+                ax.axhline(y=0, color ='dimgrey')
+                ax.set_ylabel('$\%$ diff.to ss', size = 14)
+            
+            ax.set_title(f'{self.get_key(varname)} {varname}', size = 18)
+            ax.set_xlabel('Years', size = 18)
 
         fig.tight_layout(pad=1.0)
         
@@ -487,9 +498,9 @@ class BabyMAKROModelClass(EconModelClass):
                     y[j] = sol.__dict__[varname][a,t]-ss.__dict__[varname][a]
                     
                 ax.plot(np.arange(t_beg-t0,t_end-t0),y,label=f'$t_0$ = {t0}')
-                ax.set_xlabel('age')
+                ax.set_xlabel('Age', size = 18)
                 ax.set_ylabel('diff to ss')
-                ax.set_title(varname)
+                ax.set_title(f'{varname}')
 
             if i == 0:
                 ax.legend(frameon=True)
