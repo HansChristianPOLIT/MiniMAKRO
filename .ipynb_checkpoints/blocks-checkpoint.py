@@ -195,6 +195,7 @@ def bargaining(par,ini,ss,sol):
     P_Y = sol.P_Y
 
     # outputs
+    MPL = sol.MPL
     W_bar = sol.W_bar
     W_ast = sol.W_ast
 
@@ -203,8 +204,8 @@ def bargaining(par,ini,ss,sol):
 
     # evaluations
     W_lag = lag(ini.W,W)
-
-    W_bar[:] = P_Y*((1-par.mu_K)*Y/ell)**(1/par.sigma_Y)
+    MPL[:] = ((1-par.mu_K)*Y/ell)**(1/par.sigma_Y)
+    W_bar[:] = P_Y*MPL
     W_ast[:] = par.phi*W_bar + (1-par.phi)*par.W_U
 
     bargaining_cond[:] = W - (par.gamma_w*W_lag + (1-par.gamma_w)*W_ast)

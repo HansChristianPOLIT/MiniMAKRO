@@ -109,7 +109,8 @@ class BabyMAKROModelClass(EconModelClass):
             'm_s',
             'm_v',
             'M',
-            'mkt_clearing',            
+            'mkt_clearing',
+            'MPL',
             'P_C',
             'P_G',
             'P_F',
@@ -167,7 +168,7 @@ class BabyMAKROModelClass(EconModelClass):
         par.sigma_m = 2.0 #CRRA coefficient from matching function
         par.mu_B = 2.5 # weight on bequest motive
         par.r_hh = 0.04 # nominal return rate                               - Note: Meget afgørende for resultaterne (ved 0.08 er der ingen løsnings)
-        par.delta_L_a = 0.05*np.ones(par.A_R) # separation probabilities    - Note: Umiddelbart mindre sensitiv efter seneste ændre i labor agency
+        par.delta_L_a = 0.02*np.ones(par.A_R) # separation probabilities    - Note: Umiddelbart mindre sensitiv efter seneste ændre i labor agency
         par.W_U = 0.8 # outside option in bargaining                       - Note: Hvorfor er outside-option meget lavere end w_ss? Burde de et eller andet sted ikke ligge tæt på hinanden?
         par.Lambda = 0.25 # Share of hands-to-mouth households
 
@@ -178,13 +179,13 @@ class BabyMAKROModelClass(EconModelClass):
         par.sigma_Y = 1.01 # substitution
 
         # c. labor agency
-        par.kappa_L = 0.05 # cost of vacancies in labor units
+        par.kappa_L = 0.04 # cost of vacancies in labor units
 
         # d. capital agency
         par.Psi_0 = 4.0 # adjustment costs
 
         # e. government
-        par.r_b = 0.04 # rate of return on government debt
+        par.r_b = 0.03 # rate of return on government debt
         par.lambda_B = 0.5 # rigidity in taxes
         par.delta_B = 5 # number of adjustment years
         par.epsilon_B = 0.2 #   
@@ -213,8 +214,9 @@ class BabyMAKROModelClass(EconModelClass):
         # j. Steady State
         par.pi_hh_ss = 0.0  #Set inflation in steady state to 0
         par.m_s_ss = 0.50   #Set the job finding rate in steady state to 0.5
-        par.B_G_ss = 150.0
-        par.G_ss = 50.0
+        par.B_G_ss = 100.0
+        par.G_ss = 61.82
+        par.W_ss = 1.0 # wage
         
     def allocate(self):
         """ allocate model """
@@ -316,6 +318,18 @@ class BabyMAKROModelClass(EconModelClass):
     # evaluate #
     ############
 
+    def evaluate_block(self,block,py=False):
+
+        with jit(self) as model: # use jit for faster evaluation
+
+            if not hasattr(blocks,block): raise ValueError(f'{block} is not a valid block')
+            func = getattr(blocks,block)
+
+            if py: # python version for debugging
+                func.py_func(model.par,model.ini,model.ss,model.sol)
+            else:
+                func(model.par,model.ini,model.ss,model.sol)
+    
     def evaluate_blocks(self,ini=None,do_print=False,py=False):
         """ evaluate all blocks """
 

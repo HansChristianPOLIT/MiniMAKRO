@@ -7,12 +7,26 @@ class Fonttype:
     HEADER = '\033[1m' + '\033[94m'
     END = '\033[0m'
 
+    
+def find_household_consumption_ss(model):
+    """ find household behavior in steady state given... """
+    
+    par = model.par
+    ss = model.ss
+
+    result = optimize.root_scalar(household_ss,
+        bracket=[0.0001,1000],method='brentq',args=(par,ss,))
+    
+    household_ss(result.root,par,ss)
+
+    return result
+    
 def household_ss(Bq,par,ss):
     """ household behavior in steady state """
 
     ss.Bq = Bq
     # a. income 
-    ss.inc_a[:] = (1-ss.tau)*ss.W*ss.L_a+(1-par.Lambda)*Bq/par.A
+    ss.inc_a[:] = (1-ss.tau)*ss.W*ss.L_a+(1-par.Lambda)*ss.Bq/par.A
     
     # b. HtM 
     ss.C_HtM_a[:] = ss.inc_a/ss.P_C
@@ -23,7 +37,7 @@ def household_ss(Bq,par,ss):
 
         a = par.A-1-i
         if i == 0:
-            RHS = par.mu_B*Bq**(-par.sigma)
+            RHS = par.mu_B*ss.Bq**(-par.sigma)
         else:
             RHS = par.beta*(1+par.r_hh)*ss.C_R_a[a+1]**(-par.sigma)
 
@@ -37,8 +51,7 @@ def household_ss(Bq,par,ss):
         else: 
             B_R_a_lag = ss.B_R_a[a-1]
         
-        ss.B_R_a[a] = (1+par.r_hh)/(1+ss.pi_hh)*B_R_a_lag + (1-par.Lambda)*(1-ss.tau)*ss.W*ss.L_a[a] + (1-par.Lambda)*ss.Bq/par.A - ss.P_C*ss.C_R_a[a] #(1-ss.tau)*
-        #Note: Jeg har ganget (1-lambda) på arbejderne, således de kun modtager løn tilsvarende til deres andel        
+        ss.B_R_a[a] = (1+par.r_hh)/(1+ss.pi_hh)*B_R_a_lag + (1-par.Lambda)*(1-ss.tau)*ss.W*ss.L_a[a] + (1-par.Lambda)*ss.Bq/par.A - ss.P_C*ss.C_R_a[a] 
 
     # c. aggregate
     ss.C_a = par.Lambda*ss.C_HtM_a+(1-par.Lambda)*ss.C_R_a
@@ -51,6 +64,27 @@ def household_ss(Bq,par,ss):
     ss.B = np.sum(ss.B_a)
 
     return ss.Bq-ss.B_a[-1]
+
+def households_search_ss(par, ss):
+    """ find labor supply in steady state """
+    for a in range(par.A):
+        if a == 0:
+            ss.S_a[a] = 1.0
+            ss.L_ubar_a[a] = 0.0
+            
+        elif a >= par.A_R:
+            ss.S_a[a] = 0.0
+            ss.L_ubar_a[a] = 0.0 
+            
+        else:
+            ss.S_a[a] = (1-ss.L_a[a-1]) + par.delta_L_a[a]*ss.L_a[a-1]
+            ss.L_ubar_a[a] = (1-par.delta_L_a[a])*ss.L_a[a-1]
+
+        ss.L_a[a] = ss.L_ubar_a[a] + ss.m_s*ss.S_a[a]
+        
+    ss.S = np.sum(ss.S_a)
+    ss.L_ubar = np.sum(ss.L_ubar_a)
+    ss.L = np.sum(ss.L_a)
 
 def find_ss(par,ss,do_print=True):
 
@@ -67,6 +101,7 @@ def find_ss(par,ss,do_print=True):
     ss.m_s = par.m_s_ss   
     ss.B_G = par.B_G_ss
     ss.G = par.G_ss 
+    ss.W = par.W_ss # = 1
     
     # c. pricing in repacking firms
     ss.P_C = blocks.CES_P(ss.P_M_C,ss.P_Y,par.mu_M_C,par.sigma_C)
@@ -193,8 +228,9 @@ def find_ss(par,ss,do_print=True):
 
     # n. bargaining
     ss.W_ast = ss.W
-    ss.W_bar = ss.P_Y*((1-par.mu_K)*ss.Y/ss.ell)**(1/par.sigma_Y)
-    par.phi = (ss.W-par.W_U)/(ss.W_bar-par.W_U)
+    ss.MPL = ((1-par.mu_K)*ss.Y/ss.ell)**(1/par.sigma_Y)
+    ss.W_bar = ss.P_Y*ss.MPL
+    par.phi = (ss.W_ast-par.W_U)/(ss.W_bar-par.W_U)
     if do_print: 
         print(Fonttype.HEADER + 'Bargaining:' + Fonttype.END)
         print(f'{par.phi = :.3f}')
