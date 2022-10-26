@@ -51,7 +51,7 @@ def household_ss(Bq,par,ss):
         else: 
             B_R_a_lag = ss.B_R_a[a-1]
         
-        ss.B_R_a[a] = (1+par.r_hh)/(1+ss.pi_hh)*B_R_a_lag + (1-par.Lambda)*(1-ss.tau)*ss.W*ss.L_a[a] + (1-par.Lambda)*ss.Bq/par.A - ss.P_C*ss.C_R_a[a] 
+        ss.B_R_a[a] = (1+par.r_hh)/(1+ss.pi_hh)*B_R_a_lag + ss.inc_a[a] - ss.P_C*ss.C_R_a[a] 
 
     # c. aggregate
     ss.C_a = par.Lambda*ss.C_HtM_a+(1-par.Lambda)*ss.C_R_a

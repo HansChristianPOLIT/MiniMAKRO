@@ -147,7 +147,6 @@ class BabyMAKROModelClass(EconModelClass):
             'C_HtM_a',
             'C_R_a',
             'inc_a',
-            'FOC_C',
             'L_a',
             'L_ubar_a',
             'S_a',
@@ -427,7 +426,8 @@ class BabyMAKROModelClass(EconModelClass):
 
     def get_key(self,varname):
         """ fetch name associated with variable """
-        variabel_name = {"Export ($X$)": "X", "GDP ($Y$)":"Y", "Consumption ($C$)":"C","Imports ($M$)":"M", "Government Spending ($G$)":"G", "Investments ($I$)":"I", "Capital ($K$)":"K"}
+        variabel_name = {"Export ($X$)": "X", "GDP ($Y$)":"Y", "Consumption ($C$)":"C","Imports ($M$)":"M", "Government Spending ($G$)":"G", "Investments ($I$)":"I", "Capital ($K$)":"K", "Age Specific Searchers ($S_a$)":"S_a", "Aggregated Searchers ($S$)":"S","Age Specific Income ($inc_a$)":"inc_a", "Age Specific Consumption ($C_a$)":"C_a", "Bequest ($B_q$)":"Bq", "Tax Rate ($\tau$)": "tau", "Nominal Wage ($W$)": "W", "Real Wage ($w$)": "real_W", "Rental Price of Capital ($r_K$)":"r_K", "Labor Supply ($L$)": "L", "Public Debt ($B_G$)": "B_G", "End-of-Period Savings ($B$)": "B", "Income ($inc$)": "inc", "Vacancies ($v$)":"v", "Vancancy Filling Rate ($m_v$)":"m_v", "Job Finding Rate ($m_s$)": "m_s"}
+        
         for key, value in variabel_name.items():
             if value == varname:
                  return key

@@ -348,7 +348,6 @@ def households_consumption(par,ini,ss,sol):
     real_W[:] = W/P_C
     real_r_hh[:] = (1+par.r_hh)/(1+pi_hh_plus)-1
 
-
     # targets
     Bq_match = sol.Bq_match
     
@@ -399,8 +398,7 @@ def households_consumption(par,ini,ss,sol):
             else:
                 B_R_a_lag = B_R_a[a-1,t-1]
             
-            B_R_a[a,t] = (1+par.r_hh)*B_R_a_lag + (1-par.Lambda)*inc_a[a,t] - P_C[t]*C_R_a[a,t] #(1-tau[t])* 
-            #Note: Jeg har ganget (1-lambda) på arbejderne, således de kun modtager løn tilsvarende til deres andel
+            B_R_a[a,t] = (1+par.r_hh)*B_R_a_lag + inc_a[a,t] - P_C[t]*C_R_a[a,t]
 
     # d. Aggregate
     for t in range(par.T):
