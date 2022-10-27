@@ -37,7 +37,7 @@ def household_ss(Bq,par,ss):
 
         a = par.A-1-i
         if i == 0:
-            RHS = par.mu_B*ss.Bq**(-par.sigma)
+            RHS = par.mu_B*(ss.Bq/ss.P_C)**(-par.sigma)
         else:
             RHS = par.beta*(1+par.r_hh)*ss.C_R_a[a+1]**(-par.sigma)
 

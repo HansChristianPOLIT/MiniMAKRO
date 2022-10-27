@@ -372,7 +372,7 @@ def households_consumption(par,ini,ss,sol):
             # RHS
             if i == 0:
 
-                RHS = par.mu_B*Bq[t]**(-par.sigma)
+                RHS = par.mu_B*(Bq[t]/P_C[t])**(-par.sigma)
 
             else:
 
@@ -386,7 +386,7 @@ def households_consumption(par,ini,ss,sol):
             # invert
             C_R_a[a,t] = RHS**(-1/par.sigma)
 
-    # find savings forward (and aggregates)
+    # find savings forward 
     for t in range(par.T):
 
         for a in range(par.A):
