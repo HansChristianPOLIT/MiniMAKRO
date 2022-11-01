@@ -281,7 +281,7 @@ def capital_agency(par,ini,ss,sol):
     iota_plus = lead(iota,ss.iota)
 
     term_a = -P_I*(1+adj_cost_iota(iota,K_lag,par.Psi_0,par.delta_K))
-    term_b = (1-par.delta_K)*P_I_plus*(1+adj_cost_iota(iota_plus,K,par.Psi_0,par.delta_K))
+    term_b = (1-par.delta_K)*P_I_plus #*(1+adj_cost_iota(iota_plus,K,par.Psi_0,par.delta_K))
     term_c = -P_I_plus*adj_cost_K(iota_plus,K,par.Psi_0,par.delta_K)
     
     FOC_capital_agency[:] = term_a + 1/(1+par.r_firm)*(r_K_plus + term_b + term_c)
