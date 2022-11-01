@@ -163,13 +163,13 @@ class BabyMAKROModelClass(EconModelClass):
         par.A = 80 # life-span
         par.A_R = 60 # work-life-span
         par.beta = 0.95 # discount factor
-        par.sigma = 2.0 # CRRA coefficient
-        par.sigma_m = 2.0 #CRRA coefficient from matching function
+        par.sigma = 1.25 # CRRA coefficient
+        par.sigma_m = 0.98 #CRRA coefficient from matching function
         par.mu_B = 2.5 # weight on bequest motive
         par.r_hh = 0.04 # nominal return rate                               - Note: Meget afgørende for resultaterne (ved 0.08 er der ingen løsnings)
         par.delta_L_a = 0.02*np.ones(par.A_R) # separation probabilities    - Note: Umiddelbart mindre sensitiv efter seneste ændre i labor agency
         par.W_U = 0.8 # outside option in bargaining                       - Note: Hvorfor er outside-option meget lavere end w_ss? Burde de et eller andet sted ikke ligge tæt på hinanden?
-        par.Lambda = 0.25 # Share of hands-to-mouth households
+        par.Lambda = 0.2 # Share of hands-to-mouth households
 
         # b. production firm
         par.r_firm = 0.04 # internal rate of return
@@ -178,7 +178,7 @@ class BabyMAKROModelClass(EconModelClass):
         par.sigma_Y = 1.01 # substitution
 
         # c. labor agency
-        par.kappa_L = 0.04 # cost of vacancies in labor units
+        par.kappa_L = 0.05 # cost of vacancies in labor units
 
         # d. capital agency
         par.Psi_0 = 4.0 # adjustment costs
@@ -200,8 +200,8 @@ class BabyMAKROModelClass(EconModelClass):
         par.sigma_X = 1.5 # substitution
         
         # f. foreign
-        par.sigma_F = 1.50 # substitution in export demand
-        par.lambda_X = 0.5 # rigidity in export demand
+        par.sigma_F = 5.0 # substitution in export demand
+        par.lambda_X = 0.8 # rigidity in export demand
 
         # g. matching
         par.sigma_m = 1.5 # curvature
