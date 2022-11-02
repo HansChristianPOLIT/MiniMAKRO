@@ -215,7 +215,6 @@ class BabyMAKROModelClass(EconModelClass):
         par.m_s_ss = 0.50   #Set the job finding rate in steady state to 0.5
         par.B_G_ss = 100.0
         par.G_ss = 61.82
-        par.W_ss = 1.0 # wage
         
     def allocate(self):
         """ allocate model """

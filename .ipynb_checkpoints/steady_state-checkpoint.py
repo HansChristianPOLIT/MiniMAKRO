@@ -85,6 +85,11 @@ def households_search_ss(par, ss):
     ss.S = np.sum(ss.S_a)
     ss.L_ubar = np.sum(ss.L_ubar_a)
     ss.L = np.sum(ss.L_a)
+    
+    ss.delta_L = (ss.L-ss.L_ubar)/ss.L
+    ss.curlyM = ss.delta_L*ss.L
+    ss.v = (ss.m_s**(1/par.sigma_m)*ss.S**(1/par.sigma_m)/(1-ss.m_s**(1/par.sigma_m)))**par.sigma_m
+    ss.m_v = ss.curlyM/ss.v
 
 def find_ss(par,ss,do_print=True):
 
@@ -101,7 +106,6 @@ def find_ss(par,ss,do_print=True):
     ss.m_s = par.m_s_ss   
     ss.B_G = par.B_G_ss
     ss.G = par.G_ss 
-    ss.W = par.W_ss # = 1
     
     # c. pricing in repacking firms
     ss.P_C = blocks.CES_P(ss.P_M_C,ss.P_Y,par.mu_M_C,par.sigma_C)
