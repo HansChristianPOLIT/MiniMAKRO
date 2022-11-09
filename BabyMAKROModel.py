@@ -175,7 +175,7 @@ class BabyMAKROModelClass(EconModelClass):
         par.r_firm = 0.04 # internal rate of return
         par.delta_K = 0.10 # depreciation rate
         par.mu_K = 1/3 # weigth on capital
-        par.sigma_Y = 1.01 # substitution
+        par.sigma_Y = 1.50 # substitution
 
         # c. labor agency
         par.kappa_L = 0.05 # cost of vacancies in labor units
@@ -204,7 +204,7 @@ class BabyMAKROModelClass(EconModelClass):
         par.lambda_X = 0.8 # rigidity in export demand
 
         # g. matching
-        par.sigma_m = 1.5 # curvature
+        par.sigma_m = 1.50 # curvature
 
         # h. bargaining
         par.gamma_w = 0.80 # wage persistence
