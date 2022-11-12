@@ -309,7 +309,7 @@ def government(par,ini,ss,sol):
             B_G_lag = B_G[t-1] 
             tau_lag = tau[t-1]
         
-        tau[t] = par.lambda_B*tau_lag + (1-par.lambda_B)*ss.tau*(B_G_lag/ss.B_G)**par.epsilon_B #problem for negative værdier af B_G_lag
+        tau[t] = par.lambda_B*tau_lag + (1-par.lambda_B)*ss.tau*(B_G_lag/ss.B_G)**par.sigma_B #problem for negative værdier af B_G_lag
         
         B_G[t] = (1+par.r_b)*B_G_lag + P_G[t]*G[t] - tau[t]*W[t]*L[t]
 

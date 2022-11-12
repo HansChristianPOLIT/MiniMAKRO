@@ -175,7 +175,7 @@ class BabyMAKROModelClass(EconModelClass):
         par.r_firm = 0.04 # internal rate of return
         par.delta_K = 0.10 # depreciation rate
         par.mu_K = 1/3 # weigth on capital
-        par.sigma_Y = 1.50 # substitution
+        par.sigma_Y = 1.01 # substitution
 
         # c. labor agency
         par.kappa_L = 0.05 # cost of vacancies in labor units
@@ -187,7 +187,7 @@ class BabyMAKROModelClass(EconModelClass):
         par.r_b = 0.03 # rate of return on government debt
         par.lambda_B = 0.5 # rigidity in taxes
         par.delta_B = 5 # number of adjustment years
-        par.epsilon_B = 0.2 #   
+        par.sigma_B = 0.2 # tax elasticity   
 
         # e. repacking
         par.mu_M_C = 0.30 # weight on imports in C
@@ -425,7 +425,7 @@ class BabyMAKROModelClass(EconModelClass):
 
     def get_key(self,varname):
         """ fetch name associated with variable """
-        variabel_name = {"Export ($X$)": "X", "GDP ($Y$)":"Y", "Consumption ($C$)":"C","Imports ($M$)":"M", "Government Spending ($G$)":"G", "Investments ($I$)":"I", "Capital ($K$)":"K", "Age Specific Searchers ($S_a$)":"S_a", "Aggregated Searchers ($S$)":"S","Age Specific Income ($inc_a$)":"inc_a", "Age Specific Consumption ($C_a$)":"C_a", "Bequest ($B_q$)":"Bq", "Tax Rate ($\tau$)": "tau", "Nominal Wage ($W$)": "W", "Real Wage ($w$)": "real_W", "Rental Price of Capital ($r_K$)":"r_K", "Labor Supply ($L$)": "L", "Public Debt ($B_G$)": "B_G", "End-of-Period Savings ($B$)": "B", "Income ($inc$)": "inc", "Vacancies ($v$)":"v", "Vancancy Filling Rate ($m_v$)":"m_v", "Job Finding Rate ($m_s$)": "m_s"}
+        variabel_name = {"Export ($X$)": "X", "GDP ($Y$)":"Y", "Consumption ($C$)":"C","Imports ($M$)":"M", "Government Spending ($G$)":"G", "Investments ($I$)":"I", "Capital ($K$)":"K", "Age Specific Searchers ($S_a$)":"S_a", "Aggregated Searchers ($S$)":"S","Age Specific Income ($inc_a$)":"inc_a", "Age Specific Consumption ($C_a$)":"C_a", "Bequest ($B_q$)":"Bq", "Tax Rate'+r' $ (\tau_t) $": "tau", "Nominal Wage ($W$)": "W", "Real Wage ($w$)": "real_W", "Rental Price of Capital ($r_K$)":"r_K", "Labor Supply ($L$)": "L", "Public Debt ($B_G$)": "B_G", "End-of-Period Savings ($B$)": "B", "Income ($inc$)": "inc", "Vacancies ($v$)":"v", "Vancancy Filling Rate ($m_v$)":"m_v", "Job Finding Rate ($m_s$)": "m_s"}
         
         for key, value in variabel_name.items():
             if value == varname:
