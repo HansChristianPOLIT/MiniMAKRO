@@ -178,7 +178,7 @@ def production_firm(par,ini,ss,sol):
     FOC_K_ell = sol.FOC_K_ell
 
     # evaluations
-    K_lag = lag(ini.K,K)
+    K_lag = lag(ss.K,K)
 
     Y[:] = CES_Y(K_lag,ell,par.mu_K,par.sigma_Y)
     P_Y[:] = CES_P(r_K,r_ell,par.mu_K,par.sigma_Y)
