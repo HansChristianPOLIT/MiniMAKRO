@@ -425,13 +425,13 @@ class BabyMAKROModelClass(EconModelClass):
 
     def get_key(self,varname):
         """ fetch name associated with variable """
-        variabel_name = {"Export ($X$)": "X", "GDP ($Y$)":"Y", "Consumption ($C$)":"C","Imports ($M$)":"M", "Government Spending ($G$)":"G", "Investments ($I$)":"I", "Capital ($K$)":"K", "Age Specific Searchers ($S_a$)":"S_a", "Aggregated Searchers ($S$)":"S","Age Specific Income ($inc_a$)":"inc_a", "Age Specific Consumption ($C_a$)":"C_a", "Bequest ($B_q$)":"Bq", "Nominal Wage ($W$)": "W", "Real Wage ($w$)": "real_W", "Rental Price of Capital ($r_K$)":"r_K", "Labor Supply ($L$)": "L", "Public Debt ($B_G$)": "B_G", "End-of-Period Savings ($B$)": "B", "Income ($inc$)": "inc", "Vacancies ($v$)":"v", "Vancancy Filling Rate ($m_v$)":"m_v", "Job Finding Rate ($m_s$)": "m_s"}
+        variabel_name = {"Export ($X_t$)": "X", "Production ($Y_t$)":"Y", "Consumption ($C_t$)":"C","Imports ($M_t$)":"M", "Public Spending ($G_t$)":"G", "Investments ($I_t$)":"I", "Capital ($K_t$)":"K", "Age Specific Searchers ($S_a$)":"S_a", "Aggregated Searchers ($S_t$)":"S","Age Specific Income ($inc^a$)":"inc_a", "Age Specific Consumption ($C_a$)":"C_a", "Bequest ($B^q_t$)":"Bq", "Nominal Wage ($W_t$)": "W", "Real Wage ($w_t$)": "real_W", "Rental Price of Capital ($r^K_t$)":"r_K", "Labor Supply ($L_t$)": "L", "Public Debt ($B^G_t$)": "B_G", "Tax Rate ($\u03C4_t$)": "tau", "End-of-Period Savings of Optimizing Households ($B^{O p t}_t$)": "B", "Income ($inc_t$)": "inc", "Consumption of Optimizing Households ($C^{O p t}_t$)": "C_R", "Consumption of HtM Households ($C^{HtM}_t$)":"C_HtM", "Vacancies ($v_t$)":"v", "Job-Filling Rate ($m^v_t$)":"m_v", "Job-Finding Rate ($m^s_t$)": "m_s","Matches ($\mathcal{M}_t)$":"curlyM","Aggregated Job-Separation Rate ($\delta^L_t$)":"delta_L", "World Price ($P^F_t$)":"P_F", "Repackaging Price of Investments ($P^I_t$)":"P_I", "Repackaging Price of Private Goods ($P^C_t$)":"P_C", "Repackaging Price of Public Goods ($P^G_t$)":"P_G", "Repackaging Price of Export ($P^X_t$)":"P_X", "Output Price ($P^Y_t$)": "P_Y", "Import Price of Public Goods ($P^{M,G}_t)$": "P_M_G", "Import Price of Private Goods ($P^{M,C}_t)$": "P_M_C", "Import Price of Investment Goods ($P^{M,I}_t)$": "P_M_I", "Import Price of Export Goods ($P^{M,X}_t$)": "P_M_X", "Rental Price of Labor ($r^{\ell}_t$)":"r_ell", "Effective Labor Supplly ($\ell_t$)":"ell"}
         
         for key, value in variabel_name.items():
             if value == varname:
                  return key
     
-    def plot_IRF(self,varlist=[],ncol=3,T_IRF=50,abs=[],Y_share=[]):
+    def plot_IRF(self,varlist=[],ncol=3,T_IRF=50,abs=[],Y_share=[],folder= [],file =[]):
         """ plot IRFs """
         
         ss = self.ss
@@ -451,22 +451,25 @@ class BabyMAKROModelClass(EconModelClass):
             if varname in abs:
                 ax.axhline(ssvalue,color='black')
                 ax.plot(path[:T_IRF],'-o',markersize=3)
+                ax.set_ylabel('$\%$', size = 12)         
             elif varname in Y_share:
                 ax.plot(path[:T_IRF]/sol.Y[:T_IRF],'-o',markersize=3)
-                ax.set_ylabel('share of Y', size = 14)         
+                ax.axhline(y=ssvalue/ss.Y, color ='dimgrey')
+                ax.set_ylabel('$\%$ of Y', size = 12)         
             elif np.isclose(ssvalue,0.0):
                 ax.plot(path[:T_IRF]-ssvalue,'-o',markersize=3)
                 ax.axhline(y=0, color ='dimgrey')
-                ax.set_ylabel('diff.to ss', size = 14)
+                ax.set_ylabel('diff.to ss', size = 12)
             else:
                 ax.plot((path[:T_IRF]/ssvalue-1)*100,'-o',markersize=3)
                 ax.axhline(y=0, color ='dimgrey')
-                ax.set_ylabel('$\%$ diff.to ss', size = 14)
+                ax.set_ylabel('$\%$ diff.to ss', size = 12)
             
-            ax.set_title(f'{self.get_key(varname)} {varname}', size = 18)
-            ax.set_xlabel('Years', size = 18)
+            ax.set_title(f'{self.get_key(varname)}', size = 12)
+            ax.set_xlabel('Year', size = 12)
 
         fig.tight_layout(pad=1.0)
+        plt.savefig(f"{folder}/{file}.pdf", format="pdf", bbox_inches="tight")
         
     def plot_IRF_hh(self,varlist,t0_list=None,ncol=2):
         """ plot IRFs for household variables """
