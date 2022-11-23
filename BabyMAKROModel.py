@@ -164,7 +164,6 @@ class BabyMAKROModelClass(EconModelClass):
         par.A_R = 60 # work-life-span
         par.beta = 0.95 # discount factor
         par.sigma = 1.25 # CRRA coefficient
-        par.sigma_m = 0.98 #CRRA coefficient from matching function
         par.mu_B = 2.5 # weight on bequest motive
         par.r_hh = 0.04 # nominal return rate                               - Note: Meget afgørende for resultaterne (ved 0.08 er der ingen løsnings)
         par.delta_L_a = 0.02*np.ones(par.A_R) # separation probabilities    - Note: Umiddelbart mindre sensitiv efter seneste ændre i labor agency
@@ -186,7 +185,6 @@ class BabyMAKROModelClass(EconModelClass):
         # e. government
         par.r_b = 0.03 # rate of return on government debt
         par.lambda_B = 0.5 # rigidity in taxes
-        par.delta_B = 5 # number of adjustment years
         par.sigma_B = 0.2 # tax elasticity   
 
         # e. repacking
