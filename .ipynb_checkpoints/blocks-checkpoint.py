@@ -413,7 +413,7 @@ def households_consumption(par,ini,ss,sol):
         C_R[t] = np.sum(C_R_a[:,t])
         B[t] = np.sum(B_a[:,t])  
 
-    # e. matching Bq
+    # e. Bequests
     Bq_match[:] = Bq - B_a[-1,:]
 
 @nb.njit

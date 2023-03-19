@@ -414,10 +414,7 @@ def households_consumption(par,ini,ss,sol):
         B[t] = np.sum(B_a[:,t])  
 
     # e. Bequests
-    for t in range(par.T):
-        Bq[t] = np.sum(par.delta_L_a*B_a[:,t])
-
-    Bq_match[:] = Bq - par.mu_B*B
+    Bq_match[:] = Bq - B_a[-1,:]
 
 @nb.njit
 def repacking_firms_components(par,ini,ss,sol):
